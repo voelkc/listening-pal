@@ -29,11 +29,14 @@ class HomePage extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(
-                'Hi, Pal!',
-                //style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
-                style: GoogleFonts.dongle( textStyle:Theme.of(context).textTheme.headline1),
-              ),
+              Row(mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Text(
+                  'Hi, Pal!',
+                  //style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
+                  style: GoogleFonts.dongle( textStyle:Theme.of(context).textTheme.headline1),
+                ),
+              ],),
               const SizedBox(height: 24),
               ElevatedButton(
                 style: ButtonStyle(
@@ -43,7 +46,7 @@ class HomePage extends StatelessWidget {
                         RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(18.0),
                             side: BorderSide(
-                                color: Color.fromRGBO(149, 212, 216, 1))))),
+                                color: Color(0xff95D4D8))))),
                 onPressed: () => goToOnBoarding(context),
                 child: const Text('Go back'),
               ),
