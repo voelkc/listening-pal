@@ -9,7 +9,7 @@ class HomePage extends StatelessWidget {
         appBar: AppBar(
             backgroundColor:  Theme.of(context).scaffoldBackgroundColor,
           title: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            mainAxisAlignment: MainAxisAlignment.end,
             children: const <Widget>[
               Icon(
                 Icons.folder,
