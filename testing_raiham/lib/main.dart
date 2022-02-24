@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 // import 'package:onboarding/onboarding.dart';
 import 'pages/onboarding.dart';
 
+import 'package:http/http.dart' as http;
+import 'package:google_fonts/google_fonts.dart';
+
+
 void main() {
   runApp(MyApp());
 }
@@ -13,9 +17,16 @@ class MyApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         title: title,
         theme: ThemeData(
-            scaffoldBackgroundColor: Color.fromARGB(1, 249, 249, 249),
+            scaffoldBackgroundColor: Color(0xffF9F9F9),
             primaryColor: Color.fromRGBO(149, 212, 216, 1),
-            primarySwatch: Colors.blue),
+            secondaryHeaderColor: Color(0xff41434D) ,
+            primarySwatch: Colors.blue,
+          textTheme: const TextTheme(
+            headline1: TextStyle(fontSize: 72.0, fontWeight: FontWeight.bold, color:Color(0xff41434D)),
+            headline6: TextStyle(fontSize: 36.0, fontStyle: FontStyle.italic, color:Color(0xff41434D)),
+            bodyText2: TextStyle(fontSize: 14.0, fontFamily: 'Hind', color:Color(0xff41434D)),
+          ),
+        ),
         home: OnboardingPage(),
       );
   // final onboardingPagesList = [
