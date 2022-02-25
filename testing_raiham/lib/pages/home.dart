@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../main.dart';
 import './onboarding.dart';
-
+import './resourcespage.dart';
 class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -10,13 +10,16 @@ class HomePage extends StatelessWidget {
             backgroundColor:  Theme.of(context).scaffoldBackgroundColor,
           title: Row(
             mainAxisAlignment: MainAxisAlignment.end,
-            children: const <Widget>[
-              Icon(
+            children: <Widget>[
+              IconButton(
+                onPressed: () => goToResources(context),
+                icon:  const Icon(
                 Icons.folder,
                 color:  Color(0xff41434D),
                 size: 24.0,
                 semanticLabel: 'Text to announce in accessibility modes',
-              ),
+              ),),
+
               Icon(
                 Icons.settings,
                 color: Color(0xff41434D),
@@ -130,4 +133,8 @@ class HomePage extends StatelessWidget {
   void goToOnBoarding(context) => Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (_) => OnboardingPage()),
       );
+
+  void goToResources(context) => Navigator.of(context).pushReplacement(
+    MaterialPageRoute(builder: (_) => ResourcesPage()),
+  );
 }
