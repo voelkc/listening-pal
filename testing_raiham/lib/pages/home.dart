@@ -20,7 +20,7 @@ class HomePage extends StatelessWidget {
                 semanticLabel: 'Text to announce in accessibility modes',
               ),),
 
-              Icon(
+             const Icon(
                 Icons.settings,
                 color: Color(0xff41434D),
                 size: 30.0,
