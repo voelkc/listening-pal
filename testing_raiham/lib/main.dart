@@ -25,7 +25,8 @@ class MyApp extends StatelessWidget {
             headline1: TextStyle(fontSize: 64.0, fontWeight: FontWeight.bold, color:Color(0xff41434D)),
             headline6: TextStyle(fontSize: 24.0, color:Color(0xff41434D)),
             bodyText2: TextStyle(fontSize: 18.0, color:Color(0xff41434D)),
-            button: TextStyle(fontSize: 14.0, color:Color(0xff41434D)),
+            button: TextStyle(fontSize: 16.0, color:Color(0xff41434D)),
+            bodyText1: TextStyle(fontSize: 18.0, decoration: TextDecoration.underline, color:Color(0xff41434D)), // clickable text!
           ),
         ),
         home: OnboardingPage(),
