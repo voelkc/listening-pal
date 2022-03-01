@@ -3,6 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import '../main.dart';
 import './onboarding.dart';
 import './resourcespage.dart';
+import './callpage.dart';
+
 class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -87,6 +89,19 @@ class HomePage extends StatelessWidget {
             //style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
             style: GoogleFonts.roboto( textStyle:Theme.of(context).textTheme.bodyText2),
           ),
+              ElevatedButton( //TODO: REMOVE FOR TESTING ONLY, should replace with stateful widget
+                style: ButtonStyle(
+                    elevation: MaterialStateProperty.all<double>(0),
+                    backgroundColor: MaterialStateProperty.all<Color>(
+                        Color.fromRGBO(149, 212, 216, 1)),
+                    shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                        RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(18.0),
+                            side: BorderSide(
+                                color: Color(0xff95D4D8))))),
+                onPressed: () => goToCall(context),
+                child: Text('Call', style: GoogleFonts.roboto( textStyle:Theme.of(context).textTheme.button),),
+              ),
           ],),],
           ),
               Row(mainAxisAlignment: MainAxisAlignment.start,
@@ -129,6 +144,10 @@ class HomePage extends StatelessWidget {
           ),
         ),
       );
+
+  void goToCall(context) => Navigator.of(context).pushReplacement(
+    MaterialPageRoute(builder: (_) => CallPage()),
+  );
 
   void goToOnBoarding(context) => Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (_) => OnboardingPage()),
