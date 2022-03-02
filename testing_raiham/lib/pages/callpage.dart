@@ -21,7 +21,7 @@ class CallPage extends StatelessWidget {
       ),]
     ),
         ),
-          Padding(padding: EdgeInsets.fromLTRB(0, 0, 0, 80),
+          Padding(padding: EdgeInsets.fromLTRB(0, 0, 0, 60),
             child:  Row (mainAxisAlignment: MainAxisAlignment.spaceBetween, crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Padding(padding: const EdgeInsets.fromLTRB(120, 0, 0, 80),
@@ -50,7 +50,7 @@ class CallPage extends StatelessWidget {
                       shape: BoxShape.circle,
                     ),
                     child: IconButton(onPressed: () {}, icon: Icon(
-                      Icons.mic_off_outlined,
+                      Icons.volume_up_outlined,
                       color: Theme.of(context).primaryColor,
                       size: 28.0,
                       semanticLabel: 'toggle speaker',
