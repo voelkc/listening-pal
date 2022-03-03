@@ -5,18 +5,20 @@ import './onboarding.dart';
 import './resourcespage.dart';
 import './callpage.dart';
 
+import 'package:url_launcher/url_launcher.dart';
+
 class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(
-            backgroundColor:  Theme.of(context).scaffoldBackgroundColor,
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           title: Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
               TextButton(
                 onPressed: () => goToResources(context),
                 child: Text('Resources',
-                  style: GoogleFonts.roboto( textStyle:Theme.of(context).textTheme.bodyText1).copyWith(decoration: TextDecoration.none),
+                  style: GoogleFonts.roboto(textStyle:Theme.of(context).textTheme.bodyText1).copyWith(decoration: TextDecoration.none),
                 ),
               ),
               TextButton(
@@ -29,24 +31,28 @@ class HomePage extends StatelessWidget {
           )
         ),
         body: Stack(children: [
-          Center(
-            child: Padding(padding: const EdgeInsets.fromLTRB(10, 0, 10, 0), child:
+          Padding(padding: const EdgeInsets.fromLTRB(10, 0, 10, 0), child:
             Column(
               mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Row(mainAxisAlignment: MainAxisAlignment.spaceAround, crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Column(mainAxisAlignment: MainAxisAlignment.start, crossAxisAlignment: CrossAxisAlignment.start, children: [
-                        Text(
-                          'Hey, pal!',
-                          //style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
-                          style: GoogleFonts.dongle( textStyle:Theme.of(context).textTheme.headline1),
-                        ), Text(
-                          'You have X credits available',
-                          //style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
-                          style: GoogleFonts.roboto( textStyle:Theme.of(context).textTheme.bodyText2),
-                        ),
-                      ]),
+              Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(mainAxisAlignment: MainAxisAlignment.start, crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [Text(
+                      'Hey, pal!',
+                      //style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
+                      style: GoogleFonts.dongle( textStyle:Theme.of(context).textTheme.headline1),
+                    ),
+                    ]),
+                Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [ Text(
+                      'You have X credits available',
+                      //style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
+                      style: GoogleFonts.roboto( textStyle:Theme.of(context).textTheme.bodyText2),
+                    ),
                       ElevatedButton(
                         style: ButtonStyle(
                             elevation: MaterialStateProperty.all<double>(0),
@@ -58,11 +64,12 @@ class HomePage extends StatelessWidget {
                                     side: const BorderSide(
                                         width: 2.5,
                                         color: Color(0xff95D4D8))))),
-                        onPressed: () => goToOnBoarding(context),
-                        child: Text('Purchase Credits',
+                        onPressed: () => launchURL('https://listeningpal.com/'),
+                        child: Text('Get Credits',
                           style: GoogleFonts.roboto( textStyle:Theme.of(context).textTheme.button),),
                       ),
                     ]),
+              ]),
                 const SizedBox(height: 24),
                 ElevatedButton(
                   style: ButtonStyle(
@@ -141,7 +148,6 @@ class HomePage extends StatelessWidget {
               ], // Chillen
             ),
             ),
-          ),
           OverlayView(key: UniqueKey()),
         ], //Stack children
         ),
@@ -368,3 +374,7 @@ void _hideOverlay() async {
 void goToCall(context) => Navigator.of(context).pushReplacement(
   MaterialPageRoute(builder: (_) => CallPage()),
 );
+
+void launchURL(url) async {
+  if (!await launch(url)) throw 'Could not launch $url';
+}
