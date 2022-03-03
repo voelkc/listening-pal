@@ -17,9 +17,9 @@ class MyApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         title: title,
         theme: ThemeData(
-            scaffoldBackgroundColor: Color(0xffF9F9F9),
-            primaryColor: Color.fromRGBO(149, 212, 216, 1),
-            secondaryHeaderColor: Color(0xff41434D) ,
+            scaffoldBackgroundColor: const Color(0xffF9F9F9),
+            primaryColor: const Color.fromRGBO(149, 212, 216, 1),
+            secondaryHeaderColor: const Color(0xff41434D) ,
             primarySwatch: Colors.blue,
           textTheme: const TextTheme(
             headline1: TextStyle(fontSize: 64.0, fontWeight: FontWeight.bold, color:Color(0xff41434D)),
