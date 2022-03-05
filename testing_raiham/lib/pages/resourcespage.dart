@@ -132,20 +132,20 @@ class ResourcesPage extends StatelessWidget {
                 ]),
               ),
             ),
-            Padding(padding: EdgeInsets.fromLTRB(0, 0, 0, 25),
-              child:
-              RichText(
-                text: TextSpan(children: [
-                  TextSpan(
-                      text: '211',
-                      style: Theme.of(context).textTheme.bodyText1,
-                      recognizer: TapGestureRecognizer()
-                        ..onTap = () {
-                          launchURL('https://www.211.org/'); //TODO this is broken, need to make it a real phone call handler. May be goofy for iOS
-                        })
-                ]),
-              ),
-            ),
+            // Padding(padding: EdgeInsets.fromLTRB(0, 0, 0, 25),
+            //   child:
+            //   RichText(
+            //     text: TextSpan(children: [
+            //       TextSpan(
+            //           text: '211',
+            //           style: Theme.of(context).textTheme.bodyText1,
+            //           recognizer: TapGestureRecognizer()
+            //             ..onTap = () {
+            //               launchURL('https://www.211.org/'); //TODO this is broken, need to make it a real phone call handler. May be goofy for iOS
+            //             })
+            //     ]),
+            //   ),
+            // ),
             Padding(padding: EdgeInsets.fromLTRB(0, 0, 0, 25),
               child:
               RichText(

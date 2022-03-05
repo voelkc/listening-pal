@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../main.dart';
@@ -22,7 +23,7 @@ class HomePage extends StatelessWidget {
                 ),
               ),
               TextButton(
-                onPressed: () => goToResources(context),
+                onPressed: () => launchURL('https://listeningpal.com/'),
                 child: Text('Account',
                   style: GoogleFonts.roboto( textStyle:Theme.of(context).textTheme.bodyText1).copyWith(decoration: TextDecoration.none),
                 ),
@@ -105,8 +106,8 @@ class HomePage extends StatelessWidget {
                                     borderRadius: BorderRadius.circular(18.0),
                                     side: BorderSide(
                                         color: Color(0xff95D4D8))))),
-                        onPressed: () =>  _presentOverlay('Jane|March 21, 2022|3:30 - 4:00pm'),
-                        child: Text('Call', style: GoogleFonts.roboto( textStyle:Theme.of(context).textTheme.button),),
+                        onPressed: () =>  _presentJoinOverlay('Jane|March 21, 2022|3:30 - 4:00pm'),
+                        child: Text('Call Placeholder', style: GoogleFonts.roboto( textStyle:Theme.of(context).textTheme.button),),
                       ),
                     ],),],
                 ),
@@ -142,20 +143,31 @@ class HomePage extends StatelessWidget {
                               borderRadius: BorderRadius.circular(18.0),
                               side: const BorderSide(
                                   color: Color(0xff95D4D8))))),
+                  onPressed: () => _presentCancelOverlay('Paul'),
+                  child: Text('Cancel Appointment Placeholder', style: GoogleFonts.roboto( textStyle:Theme.of(context).textTheme.button),),
+                ),
+                ElevatedButton(
+                  style: ButtonStyle(
+                      elevation: MaterialStateProperty.all<double>(0),
+                      backgroundColor: MaterialStateProperty.all<Color>(
+                          Color.fromRGBO(149, 212, 216, 1)),
+                      shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                          RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(18.0),
+                              side: const BorderSide(
+                                  color: Color(0xff95D4D8))))),
                   onPressed: () => goToOnBoarding(context),
                   child: Text('Go Back', style: GoogleFonts.roboto( textStyle:Theme.of(context).textTheme.button),),
                 ),
               ], // Chillen
             ),
             ),
-          OverlayView(key: UniqueKey()),
+          JoinOverlayView(key: UniqueKey()),
+          EndOverlayView(key: UniqueKey()),
+          CancelOverlayView(key: UniqueKey()),
         ], //Stack children
         ),
       );
-
-  void goToCall(context) => Navigator.of(context).pushReplacement(
-    MaterialPageRoute(builder: (_) => CallPage()),
-  );
 
   void goToOnBoarding(context) => Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (_) => OnboardingPage()),
@@ -168,8 +180,8 @@ class HomePage extends StatelessWidget {
 
 // Overlay Control stuff
 // Should add one for each type (Join call, End Call, Cancel Appointment)
-class OverlayView extends StatelessWidget {
-  const OverlayView({
+class JoinOverlayView extends StatelessWidget {
+  const JoinOverlayView({
     required Key key,
   }) : super(key: key);
 
@@ -182,10 +194,10 @@ class OverlayView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<bool>(
-      valueListenable: Loader.appLoader.loaderShowingNotifier,
+      valueListenable: OverlayLoader.appLoader.joinLoaderShowingNotifier,
       builder: (context, value, child) {
         if (value) {
-          return overlay(context);
+          return joinOverlay(context);
         } else {
           return Container();
         }
@@ -193,7 +205,7 @@ class OverlayView extends StatelessWidget {
     );
   }
 
-  Container overlay(context) {
+  Container joinOverlay(context) {
     return Container(
       color: Colors.black.withOpacity(0.5),
       child: Padding(
@@ -217,7 +229,7 @@ class OverlayView extends StatelessWidget {
                           Spacer(),
                           IconButton(
                             icon: const Icon(Icons.close_outlined, color: Color(0xffF9F9F9),),
-                            onPressed: () => _hideOverlay(),
+                            onPressed: () => _hideJoinOverlay(),
                           ),
                         ],
                       ),
@@ -233,7 +245,7 @@ class OverlayView extends StatelessWidget {
                               .copyWith(color: Theme.of(context).scaffoldBackgroundColor),);
                         },
                         valueListenable:
-                        Loader.appLoader.loaderTextNotifier,
+                        OverlayLoader.appLoader.joinLoaderTextNotifier,
                       ),
                       const SizedBox(
                         height: 30,
@@ -254,7 +266,7 @@ class OverlayView extends StatelessWidget {
                                     fontSize: 18),);
                                   },
                                   valueListenable:
-                                  Loader.appLoader.loaderTextNotifier,
+                                  OverlayLoader.appLoader.joinLoaderTextNotifier,
                                 ),
                           ]),
                           const SizedBox(
@@ -274,7 +286,7 @@ class OverlayView extends StatelessWidget {
                                       fontSize: 18),);
                                   },
                                   valueListenable:
-                                  Loader.appLoader.loaderTextNotifier,
+                                  OverlayLoader.appLoader.joinLoaderTextNotifier,
                                 ),
                               ]),
                           Padding(padding: const EdgeInsets.fromLTRB(3, 20, 25, 0),
@@ -312,7 +324,7 @@ class OverlayView extends StatelessWidget {
                                         borderRadius: BorderRadius.circular(18.0),
                                         side: const BorderSide(
                                             color: Color(0xff95D4D8))))),
-                            onPressed: () => {_hideOverlay(), goToCall(context)},
+                            onPressed: () async => {_hideJoinOverlay(), _goToCall(context), await Future.delayed(const Duration(seconds: 1)), _presentEndOverlay('text')},
                             child: Padding(padding: const EdgeInsets.fromLTRB(15, 0, 15, 0),
                               child: Text('Join Now',
                               style: GoogleFonts.roboto( textStyle:Theme.of(context).textTheme.button),
@@ -338,40 +350,370 @@ class OverlayView extends StatelessWidget {
   }
 }
 
-class Loader {
-  static final Loader appLoader = Loader(); //singleton
-  ValueNotifier<bool> loaderShowingNotifier = ValueNotifier(false);
-  ValueNotifier<String> loaderTextNotifier = ValueNotifier('message');
+class EndOverlayView extends StatelessWidget {
+  const EndOverlayView({
+    required Key key,
+  }) : super(key: key);
 
-  void showLoader() {
-  loaderShowingNotifier.value = true;
+  // @override
+  // State<StatefulWidget> createState() {
+  //   // TODO: implement createState
+  //   throw UnimplementedError();
+  // }
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<bool>(
+      valueListenable: OverlayLoader.appLoader.endLoaderShowingNotifier,
+      builder: (context, value, child) {
+        if (value) {
+          return endOverlay(context);
+        } else {
+          return Container();
+        }
+      },
+    );
   }
 
-  void hideLoader() {
-  loaderShowingNotifier.value = false;
-  }
+  Container endOverlay(context) {
+    return Container(
+      color: Colors.black.withOpacity(0.5),
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Center(
+          child: Row(
+            children: [
+              Expanded(
+                child: Card(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15.0),
+                  ),
+                  color: const Color(0xff41434D),
+                  child: Padding( padding: const EdgeInsets.fromLTRB(30, 0, 30, 0),
+                    child:Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Row(
+                        //   children: [
+                        //     Spacer(),
+                        //     IconButton(
+                        //       icon: const Icon(Icons.close_outlined, color: Color(0xffF9F9F9),),
+                        //       onPressed: () => _hideEndOverlay(),
+                        //     ),
+                        //   ],
+                        // ),
+                        const SizedBox(height: 30),
+                        Text('Thank you',
+                            style: GoogleFonts.dongle( textStyle:Theme.of(context)
+                                .textTheme.headline1,)
+                                .copyWith(color: Theme.of(context).scaffoldBackgroundColor, fontSize: 48)
+                        ),
+                        const SizedBox(height: 30),
+                        Text('Did something go wrong?',
+                            style: GoogleFonts.roboto( textStyle:Theme.of(context)
+                                .textTheme.bodyText2,)
+                                .copyWith(color: Theme.of(context).scaffoldBackgroundColor)
+                        ),
+                        const SizedBox(height: 30),
+                        RichText(
+                          text: TextSpan(children: [
+                            TextSpan(
+                                text: 'If so, you can report it ',
+                                style: GoogleFonts.roboto( textStyle:Theme.of(context)
+                                    .textTheme.bodyText2,)
+                                    .copyWith(color: Theme.of(context).scaffoldBackgroundColor)
+                            ),
+                            TextSpan(
+                                text: 'here',
+                                style: GoogleFonts.roboto( textStyle:Theme.of(context)
+                                    .textTheme.bodyText2,)
+                                    .copyWith(color: Theme.of(context).primaryColor, decoration: TextDecoration.underline),
+                                recognizer: TapGestureRecognizer()
+                                  ..onTap = () {
+                                    launchURL('tel:741741'); //TODO this is broken, need to make it a real SMS handler. May be goofy for iOS
+                                  }),
+                          ]),
+                        ),
+                        const SizedBox(height: 60),
+                        Row( mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            ElevatedButton(
+                              style: ButtonStyle(
+                                  elevation: MaterialStateProperty.all<double>(0),
+                                  backgroundColor: MaterialStateProperty.all<Color>(
+                                      const Color.fromRGBO(149, 212, 216, 1)),
+                                  shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                                      RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(18.0),
+                                          side: const BorderSide(
+                                              color: Color(0xff95D4D8))))),
+                              onPressed: () => {_hideEndOverlay()},
+                              child: Padding(padding: const EdgeInsets.fromLTRB(35, 0, 35, 0),
+                                child: Text('Done',
+                                  style: GoogleFonts.roboto( textStyle:Theme.of(context).textTheme.button),
+                                ),
+                              ),
+                            ),
+                          ],),
 
-  void setText({String errorMessage = 'default'}) {
-  loaderTextNotifier.value = errorMessage;
-  }
-
-  void setImage() {
-    // same as that of setText //
+                        const SizedBox(height: 20),
+                ]),
+              ),
+          ),
+              ),
+            ],),
+        ),
+      ),
+    );
   }
 }
 
-void _presentOverlay(message) async {
-  Loader.appLoader.showLoader();
-  Loader.appLoader.setText(errorMessage: message);
+class CancelOverlayView extends StatelessWidget {
+  const CancelOverlayView({
+    required Key key,
+  }) : super(key: key);
+
+  // @override
+  // State<StatefulWidget> createState() {
+  //   // TODO: implement createState
+  //   throw UnimplementedError();
+  // }
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<bool>(
+      valueListenable: OverlayLoader.appLoader.cancelLoaderShowingNotifier,
+      builder: (context, value, child) {
+        if (value) {
+          return cancelOverlay(context);
+        } else {
+          return Container();
+        }
+      },
+    );
+  }
+
+  Container cancelOverlay(context) {
+    return Container(
+      color: Colors.black.withOpacity(0.5),
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Center(
+          child: Row(
+            children: [
+              Expanded(
+                child: Card(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15.0),
+                  ),
+                  color: const Color(0xff41434D),
+                  child: Padding( padding: const EdgeInsets.fromLTRB(30, 0, 30, 0),
+                    child:Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Row(
+                          //   children: [
+                          //     Spacer(),
+                          //     IconButton(
+                          //       icon: const Icon(Icons.close_outlined, color: Color(0xffF9F9F9),),
+                          //       onPressed: () => _hideEndOverlay(),
+                          //     ),
+                          //   ],
+                          // ),
+                          const SizedBox(height: 30),
+                          Text('Confirmation',
+                              style: GoogleFonts.dongle( textStyle:Theme.of(context)
+                                  .textTheme.headline1,)
+                                  .copyWith(color: Theme.of(context).scaffoldBackgroundColor, fontSize: 48)
+                          ),
+                          const SizedBox(height: 30),
+                          ValueListenableBuilder<String>(
+                            builder: (context, value, child) {
+                              return Text('Are you sure you want to cancel your appointment on ' + value.split('|')[1], style: GoogleFonts.roboto(
+                                textStyle:Theme.of(context).textTheme.bodyText2,
+                              ).copyWith(color: Theme.of(context).scaffoldBackgroundColor,
+                                  fontSize: 18),);
+                            },
+                            valueListenable:
+                            OverlayLoader.appLoader.joinLoaderTextNotifier,
+                          ),
+                          const SizedBox(height: 30),
+                          Row(mainAxisAlignment: MainAxisAlignment.start, crossAxisAlignment: CrossAxisAlignment.start,
+                              children:[
+                                const Icon(Icons.person_outline_rounded, color: Color(0xffF9F9F9),),
+                                const SizedBox(
+                                  width: 10,
+                                ),
+                                ValueListenableBuilder<String>(
+                                  builder: (context, value, child) {
+                                    return Text('Call with ' + value.split('|')[0], style: GoogleFonts.roboto(
+                                      textStyle:Theme.of(context).textTheme.bodyText2,
+                                    ).copyWith(color: Theme.of(context).scaffoldBackgroundColor,
+                                        fontSize: 18),);
+                                  },
+                                  valueListenable:
+                                  OverlayLoader.appLoader.joinLoaderTextNotifier,
+                                ),
+                              ]),
+                          const SizedBox(
+                            height: 8,
+                          ),
+                          Row(mainAxisAlignment: MainAxisAlignment.start, crossAxisAlignment: CrossAxisAlignment.start,
+                              children:[
+                                const Icon(Icons.access_time, color: Color(0xffF9F9F9),),
+                                const SizedBox(
+                                  width: 10,
+                                ),
+                                ValueListenableBuilder<String>(
+                                  builder: (context, value, child) {
+                                    return Text('at ' + value.split('|')[2], style: GoogleFonts.roboto(
+                                      textStyle:Theme.of(context).textTheme.bodyText2,
+                                    ).copyWith(color: Theme.of(context).scaffoldBackgroundColor,
+                                        fontSize: 18),);
+                                  },
+                                  valueListenable:
+                                  OverlayLoader.appLoader.joinLoaderTextNotifier,
+                                ),
+                              ]),
+                          const SizedBox(height: 60),
+                          Row( mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              ElevatedButton(
+                                style: ButtonStyle(
+                                    elevation: MaterialStateProperty.all<double>(0),
+                                    backgroundColor: MaterialStateProperty.all<Color>(
+                                        const Color.fromRGBO(149, 212, 216, 1)),
+                                    shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                                        RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(18.0),
+                                            side: const BorderSide(
+                                                color: Color(0xff95D4D8))))),
+                                onPressed: () => {_hideCancelOverlay()},
+                                child: Padding(padding: const EdgeInsets.fromLTRB(35, 0, 35, 0),
+                                  child: Text('YES, Cancel',
+                                    style: GoogleFonts.roboto( textStyle:Theme.of(context).textTheme.button),
+                                  ),
+                                ),
+                              ),
+
+                            ],),
+                          Row( mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              ElevatedButton(
+                                style: ButtonStyle(
+                                    elevation: MaterialStateProperty.all<double>(0),
+                                    backgroundColor: MaterialStateProperty.all<Color>(
+                                        const Color.fromRGBO(149, 212, 216, 1)),
+                                    shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                                        RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(18.0),
+                                            side: const BorderSide(
+                                                color: Color(0xff95D4D8))))),
+                                onPressed: () => {_hideCancelOverlay()},
+                                child: Padding(padding: const EdgeInsets.fromLTRB(14, 0, 14, 0),
+                                  child: Text('NO, Do not cancel',
+                                    style: GoogleFonts.roboto( textStyle:Theme.of(context).textTheme.button),
+                                  ),
+                                ),
+                              ),
+
+                            ],),
+
+                          const SizedBox(height: 20),
+                        ]),
+                  ),
+                ),
+              ),
+            ],),
+        ),
+      ),
+    );
+  }
+}
+
+class OverlayLoader {
+  static final OverlayLoader appLoader = OverlayLoader(); //singleton
+  ValueNotifier<bool> joinLoaderShowingNotifier = ValueNotifier(false);
+  ValueNotifier<String> joinLoaderTextNotifier = ValueNotifier('message');
+  ValueNotifier<bool> endLoaderShowingNotifier = ValueNotifier(false);
+  ValueNotifier<String> endLoaderTextNotifier = ValueNotifier('message');
+  ValueNotifier<bool> cancelLoaderShowingNotifier = ValueNotifier(false);
+  ValueNotifier<String> cancelLoaderTextNotifier = ValueNotifier('message');
+
+  void showJoinLoader() {
+  joinLoaderShowingNotifier.value = true;
+  }
+
+  void hideJoinLoader() {
+  joinLoaderShowingNotifier.value = false;
+  }
+
+  void setJoinOverlayText({String errorMessage = 'default'}) {
+  joinLoaderTextNotifier.value = errorMessage;
+  }
+
+  void showEndLoader() {
+    endLoaderShowingNotifier.value = true;
+  }
+
+  void hideEndLoader() {
+    endLoaderShowingNotifier.value = false;
+  }
+
+  void setEndOverlayText({String errorMessage = 'default'}) {
+    endLoaderTextNotifier.value = errorMessage;
+  }
+
+  void showCancelLoader() {
+    cancelLoaderShowingNotifier.value = true;
+  }
+
+  void hideCancelLoader() {
+    cancelLoaderShowingNotifier.value = false;
+  }
+
+  void setCancelOverlayText({String errorMessage = 'default'}) {
+    cancelLoaderTextNotifier.value = errorMessage;
+  }
+}
+
+void _presentJoinOverlay(message) async {
+  OverlayLoader.appLoader.showJoinLoader();
+  OverlayLoader.appLoader.setJoinOverlayText(errorMessage: message);
   // await Future.delayed(Duration(seconds: 5)); // Hide it after 5 seconds for testing
   // Loader.appLoader.hideLoader();
 }
 
-void _hideOverlay() async {
-  Loader.appLoader.hideLoader();
+void _hideJoinOverlay() async {
+  OverlayLoader.appLoader.hideJoinLoader();
 }
 
-void goToCall(context) => Navigator.of(context).pushReplacement(
+void _presentEndOverlay(message) async {
+  OverlayLoader.appLoader.showEndLoader();
+  OverlayLoader.appLoader.setEndOverlayText(errorMessage: message);
+  // await Future.delayed(Duration(seconds: 5)); // Hide it after 5 seconds for testing
+  // Loader.appLoader.hideLoader();
+}
+
+void _hideEndOverlay() async {
+  OverlayLoader.appLoader.hideEndLoader();
+}
+
+void _presentCancelOverlay(message) async {
+  OverlayLoader.appLoader.showCancelLoader();
+  OverlayLoader.appLoader.setCancelOverlayText(errorMessage: message);
+  // await Future.delayed(Duration(seconds: 5)); // Hide it after 5 seconds for testing
+  // Loader.appLoader.hideLoader();
+}
+
+void _hideCancelOverlay() async {
+  OverlayLoader.appLoader.hideCancelLoader();
+}
+
+
+void _goToCall(context) => Navigator.of(context).pushReplacement(
   MaterialPageRoute(builder: (_) => CallPage()),
 );
 
