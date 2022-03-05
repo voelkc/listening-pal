@@ -5,6 +5,7 @@ import '../main.dart';
 import './onboarding.dart';
 import './resourcespage.dart';
 import './callpage.dart';
+import './appointments.dart';
 
 import 'package:url_launcher/url_launcher.dart';
 
@@ -82,7 +83,7 @@ class HomePage extends StatelessWidget {
                               borderRadius: BorderRadius.circular(18.0),
                               side: const BorderSide(
                                   color: Color(0xff95D4D8))))),
-                  onPressed: () => goToOnBoarding(context),
+                  onPressed: () => goToApptPage(context),
                   child: Text('Schedule an Appointment', style: GoogleFonts.roboto( textStyle:Theme.of(context).textTheme.button),),
                 ),
                 Row(mainAxisAlignment: MainAxisAlignment.start,
@@ -169,13 +170,20 @@ class HomePage extends StatelessWidget {
         ),
       );
 
+  void goToCall(context) => Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => CallPage()),
+      );
+
   void goToOnBoarding(context) => Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (_) => OnboardingPage()),
       );
 
   void goToResources(context) => Navigator.of(context).pushReplacement(
-    MaterialPageRoute(builder: (_) => ResourcesPage()),
-  );
+        MaterialPageRoute(builder: (_) => ResourcesPage()),
+      );
+  void goToApptPage(context) => Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => ApptPage()),
+      );
 }
 
 // Overlay Control stuff
