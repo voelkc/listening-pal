@@ -144,8 +144,8 @@ class HomePage extends StatelessWidget {
                               borderRadius: BorderRadius.circular(18.0),
                               side: const BorderSide(
                                   color: Color(0xff95D4D8))))),
-                  onPressed: () => _presentCancelOverlay('Paul'),
-                  child: Text('Cancel Appointment Placeholder', style: GoogleFonts.roboto( textStyle:Theme.of(context).textTheme.button),),
+                  onPressed: () => _presentAppointmentDetailsOverlay('Jane|March 21, 2022|3:30 - 4:00pm'),
+                  child: Text('Appointment Placeholder', style: GoogleFonts.roboto( textStyle:Theme.of(context).textTheme.button),),
                 ),
                 ElevatedButton(
                   style: ButtonStyle(
@@ -166,6 +166,7 @@ class HomePage extends StatelessWidget {
           JoinOverlayView(key: UniqueKey()),
           EndOverlayView(key: UniqueKey()),
           CancelOverlayView(key: UniqueKey()),
+          AppointmentDetailsOverlayView(key: UniqueKey()),
         ], //Stack children
         ),
       );
@@ -503,6 +504,7 @@ class CancelOverlayView extends StatelessWidget {
   }
 
   Container cancelOverlay(context) {
+    debugPrint(OverlayLoader.appLoader.cancelLoaderTextNotifier.value);
     return Container(
       color: Colors.black.withOpacity(0.5),
       child: Padding(
@@ -545,7 +547,7 @@ class CancelOverlayView extends StatelessWidget {
                                   fontSize: 18),);
                             },
                             valueListenable:
-                            OverlayLoader.appLoader.joinLoaderTextNotifier,
+                            OverlayLoader.appLoader.cancelLoaderTextNotifier,
                           ),
                           const SizedBox(height: 30),
                           Row(mainAxisAlignment: MainAxisAlignment.start, crossAxisAlignment: CrossAxisAlignment.start,
@@ -562,7 +564,7 @@ class CancelOverlayView extends StatelessWidget {
                                         fontSize: 18),);
                                   },
                                   valueListenable:
-                                  OverlayLoader.appLoader.joinLoaderTextNotifier,
+                                  OverlayLoader.appLoader.cancelLoaderTextNotifier,
                                 ),
                               ]),
                           const SizedBox(
@@ -582,7 +584,7 @@ class CancelOverlayView extends StatelessWidget {
                                         fontSize: 18),);
                                   },
                                   valueListenable:
-                                  OverlayLoader.appLoader.joinLoaderTextNotifier,
+                                  OverlayLoader.appLoader.cancelLoaderTextNotifier,
                                 ),
                               ]),
                           const SizedBox(height: 60),
@@ -598,7 +600,7 @@ class CancelOverlayView extends StatelessWidget {
                                             borderRadius: BorderRadius.circular(18.0),
                                             side: const BorderSide(
                                                 color: Color(0xff95D4D8))))),
-                                onPressed: () => {_hideCancelOverlay()},
+                                onPressed: () => {_hideCancelOverlay()}, //TODO: Cancel the appointment
                                 child: Padding(padding: const EdgeInsets.fromLTRB(35, 0, 35, 0),
                                   child: Text('YES, Cancel',
                                     style: GoogleFonts.roboto( textStyle:Theme.of(context).textTheme.button),
@@ -619,7 +621,7 @@ class CancelOverlayView extends StatelessWidget {
                                             borderRadius: BorderRadius.circular(18.0),
                                             side: const BorderSide(
                                                 color: Color(0xff95D4D8))))),
-                                onPressed: () => {_hideCancelOverlay()},
+                                onPressed: () => {_hideCancelOverlay()}, // I don't think I need to do anything here.
                                 child: Padding(padding: const EdgeInsets.fromLTRB(14, 0, 14, 0),
                                   child: Text('NO, Do not cancel',
                                     style: GoogleFonts.roboto( textStyle:Theme.of(context).textTheme.button),
@@ -641,6 +643,143 @@ class CancelOverlayView extends StatelessWidget {
   }
 }
 
+class AppointmentDetailsOverlayView extends StatelessWidget {
+  const AppointmentDetailsOverlayView({
+    required Key key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<bool>(
+      valueListenable: OverlayLoader.appLoader.appointmentDetailsLoaderShowingNotifier,
+      builder: (context, value, child) {
+        if (value) {
+          return appointmentDetailsOverlay(context);
+        } else {
+          return Container();
+        }
+      },
+    );
+  }
+
+  Container appointmentDetailsOverlay(context) {
+    debugPrint('appointmentDetailsOverlay being returned');
+    return Container(
+      color: Colors.black.withOpacity(0.5),
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Center(
+          child: Row(
+            children: [
+              Expanded(
+                child: Card(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15.0),
+                  ),
+                  color: const Color(0xff41434D),
+                  child: Padding( padding: const EdgeInsets.fromLTRB(30, 0, 0, 0),
+                    child:Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Spacer(),
+                              IconButton(
+                                icon: const Icon(Icons.close_outlined, color: Color(0xffF9F9F9),),
+                                onPressed: () => _hideAppointmentDetailsOverlay(),
+                              ),
+                            ],
+                          ),
+                          Text('Day of Week',
+                              style: GoogleFonts.dongle( textStyle:Theme.of(context)
+                                  .textTheme.headline1,)
+                                  .copyWith(color: Theme.of(context).scaffoldBackgroundColor, fontSize: 48)
+                          ),
+                          ValueListenableBuilder<String>(
+                            builder: (context, value, child) {
+                              return Text(value.split('|')[1], style: GoogleFonts.roboto(
+                                textStyle:Theme.of(context).textTheme.bodyText2,
+                              ).copyWith(color: Theme.of(context).scaffoldBackgroundColor,
+                                  fontSize: 18),);
+                            },
+                            valueListenable:
+                            OverlayLoader.appLoader.appointmentDetailsLoaderTextNotifier,
+                          ),
+                          const SizedBox(height: 30),
+                          Row(mainAxisAlignment: MainAxisAlignment.start, crossAxisAlignment: CrossAxisAlignment.start,
+                              children:[
+                                const Icon(Icons.person_outline_rounded, color: Color(0xffF9F9F9),),
+                                const SizedBox(
+                                  width: 10,
+                                ),
+                                ValueListenableBuilder<String>(
+                                  builder: (context, value, child) {
+                                    return Text('Call with ' + value.split('|')[0], style: GoogleFonts.roboto(
+                                      textStyle:Theme.of(context).textTheme.bodyText2,
+                                    ).copyWith(color: Theme.of(context).scaffoldBackgroundColor,
+                                        fontSize: 18),);
+                                  },
+                                  valueListenable:
+                                  OverlayLoader.appLoader.appointmentDetailsLoaderTextNotifier,
+                                ),
+                              ]),
+                          const SizedBox(
+                            height: 8,
+                          ),
+                          Row(mainAxisAlignment: MainAxisAlignment.start, crossAxisAlignment: CrossAxisAlignment.start,
+                              children:[
+                                const Icon(Icons.access_time, color: Color(0xffF9F9F9),),
+                                const SizedBox(
+                                  width: 10,
+                                ),
+                                ValueListenableBuilder<String>(
+                                  builder: (context, value, child) {
+                                    return Text('at ' + value.split('|')[2], style: GoogleFonts.roboto(
+                                      textStyle:Theme.of(context).textTheme.bodyText2,
+                                    ).copyWith(color: Theme.of(context).scaffoldBackgroundColor,
+                                        fontSize: 18),);
+                                  },
+                                  valueListenable:
+                                  OverlayLoader.appLoader.appointmentDetailsLoaderTextNotifier,
+                                ),
+                              ]),
+                          const SizedBox(height: 60),
+                          Padding(padding: const EdgeInsets.fromLTRB(0, 0, 30, 0),
+                              child:
+                                Row( mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    ElevatedButton(
+                                      style: ButtonStyle(
+                                          elevation: MaterialStateProperty.all<double>(0),
+                                          backgroundColor: MaterialStateProperty.all<Color>(
+                                              const Color(0xff41434D)),
+                                          shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                                              RoundedRectangleBorder(
+                                                  borderRadius: BorderRadius.circular(18.0),
+                                                  side: const BorderSide(
+                                                      width: 2.5,
+                                                      color: Color(0xffF9F9F9))))),
+                                      onPressed: () => {_hideAppointmentDetailsOverlay(),
+                                        _presentCancelOverlay(OverlayLoader.appLoader.appointmentDetailsLoaderTextNotifier.value)},
+                                      child: Text('Cancel Appointment',
+                                        style: GoogleFonts.roboto( textStyle:Theme.of(context).textTheme.button).copyWith(color: const Color(0xffF9F9F9), fontSize: 18),),
+                                    ),
+
+                                  ],),
+                          ),
+                          const SizedBox(height: 20),
+                        ]),
+                  ),
+                ),
+              ),
+            ],),
+        ),
+      ),
+    );
+  }
+}
+
 class OverlayLoader {
   static final OverlayLoader appLoader = OverlayLoader(); //singleton
   ValueNotifier<bool> joinLoaderShowingNotifier = ValueNotifier(false);
@@ -649,6 +788,8 @@ class OverlayLoader {
   ValueNotifier<String> endLoaderTextNotifier = ValueNotifier('message');
   ValueNotifier<bool> cancelLoaderShowingNotifier = ValueNotifier(false);
   ValueNotifier<String> cancelLoaderTextNotifier = ValueNotifier('message');
+  ValueNotifier<bool> appointmentDetailsLoaderShowingNotifier = ValueNotifier(false);
+  ValueNotifier<String> appointmentDetailsLoaderTextNotifier = ValueNotifier('message');
 
   void showJoinLoader() {
   joinLoaderShowingNotifier.value = true;
@@ -685,6 +826,23 @@ class OverlayLoader {
   void setCancelOverlayText({String errorMessage = 'default'}) {
     cancelLoaderTextNotifier.value = errorMessage;
   }
+
+  void showAppointmentDetailsLoader() {
+    debugPrint('showAppointmentDetailsLoader');
+    appointmentDetailsLoaderShowingNotifier.value = true;
+    debugPrint(appointmentDetailsLoaderShowingNotifier.value.toString());
+  }
+
+  void hideAppointmentDetailsLoader() {
+    debugPrint('hideAppointmentDetailsLoader');
+    appointmentDetailsLoaderShowingNotifier.value = false;
+  }
+
+  void setAppointmentDetailsOverlayText({String errorMessage = 'default'}) {
+    debugPrint('setAppointmentDetailsOverlayText');
+    appointmentDetailsLoaderTextNotifier.value = errorMessage;
+    debugPrint(appointmentDetailsLoaderTextNotifier.value);
+  }
 }
 
 void _presentJoinOverlay(message) async {
@@ -718,6 +876,18 @@ void _presentCancelOverlay(message) async {
 
 void _hideCancelOverlay() async {
   OverlayLoader.appLoader.hideCancelLoader();
+}
+
+void _presentAppointmentDetailsOverlay(message) async {
+  debugPrint('_presentAppointmentDetailsOverlay');
+  OverlayLoader.appLoader.showAppointmentDetailsLoader();
+  OverlayLoader.appLoader.setAppointmentDetailsOverlayText(errorMessage: message);
+  // await Future.delayed(Duration(seconds: 5)); // Hide it after 5 seconds for testing
+  // Loader.appLoader.hideLoader();
+}
+
+void _hideAppointmentDetailsOverlay() async {
+  OverlayLoader.appLoader.hideAppointmentDetailsLoader();
 }
 
 
