@@ -36,7 +36,7 @@ class CodePage extends StatelessWidget {
                 onPressed: () => goToHome(context),
                 child: const Text('Continue'),
               ),
-             // Image(image: buildImage('img/digit.png')),
+              // Image(image: buildImage('img/digit.png')),
             ],
           ),
         ),

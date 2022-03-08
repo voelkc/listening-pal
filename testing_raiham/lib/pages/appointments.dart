@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import './onboarding.dart';
-import './home.dart';
-import 'package:syncfusion_flutter_calendar/calendar.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
 
+class Event {
+  const Event(this.sessionTime, this.title);
+  final String sessionTime;
+  final String title;
+}
+
 class ApptPage extends StatefulWidget {
-  // @override
-  // const ApptPage({Key? key}) : super(key: key);
   @override
   _TableBasicsState createState() => _TableBasicsState();
 }
@@ -16,12 +18,35 @@ class ApptPage extends StatefulWidget {
 class _TableBasicsState extends State<ApptPage> {
   CalendarFormat _calendarFormat = CalendarFormat.month;
   DateTime _focusedDay = DateTime.now();
-  DateTime? _selectedDay;
-  var _chosenValue = null;
+  DateTime? _selectedDay = DateTime.now();
+
   bool showWidget = false;
   bool timeClicked = false;
-  bool selectedTime = false;
-  bool selectedTime2 = false;
+  bool cancelClicked = false;
+  String selectedTime = "";
+
+  Map<DateTime, List<Event>> selectedEvents = {
+    DateTime.utc(2022, 3, 3): [Event('3:30-4:00 PM', "Call with Jane")],
+    DateTime.utc(2022, 3, 8): [Event('4:00-4:30 PM', "Call with Lilly")],
+    DateTime.utc(2022, 3, 16): [Event('4:00-4:30 PM', "Call with Sam")],
+    DateTime.utc(2022, 3, 21): [Event('1:30-2:00 PM', "Call with Toby")],
+    DateTime.utc(2022, 3, 25): [Event('9:00-9:30 PM', "Call with Jane")],
+  };
+
+  String selectedSession = '';
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  List<Event> _getEventsfromDay(DateTime date) {
+    return selectedEvents[date] ?? [];
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -61,13 +86,11 @@ class _TableBasicsState extends State<ApptPage> {
                       children: [
                         Text(
                           'Hey, pal!',
-                          //style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
                           style: GoogleFonts.dongle(
                               textStyle: Theme.of(context).textTheme.headline1),
                         ),
                         Text(
                           'You have X credits available',
-                          //style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
                           style: GoogleFonts.roboto(
                               textStyle: Theme.of(context).textTheme.bodyText2),
                         ),
@@ -100,18 +123,10 @@ class _TableBasicsState extends State<ApptPage> {
                       padding: EdgeInsets.fromLTRB(10, 15, 0, 0),
                       child: Text(
                         'Select Date',
-                        //style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
                         style: GoogleFonts.roboto(
                             textStyle: Theme.of(context).textTheme.headline6),
                       )),
                 ]),
-            // Row(mainAxisAlignment: MainAxisAlignment.start, children: [
-            //   Text(
-            //     'Select Date',
-            //     style: GoogleFonts.dongle(
-            //         textStyle: Theme.of(context).textTheme.headline6),
-            //   ),
-            // ]),
             Expanded(
               child: SizedBox(
                 height: 300.0,
@@ -121,25 +136,28 @@ class _TableBasicsState extends State<ApptPage> {
                   lastDay: DateTime(2023),
                   focusedDay: _focusedDay,
                   calendarFormat: _calendarFormat,
+                  calendarStyle: CalendarStyle(
+                      todayDecoration: BoxDecoration(
+                          color: Color(0xff95D4D8), shape: BoxShape.circle)),
                   selectedDayPredicate: (day) {
                     return isSameDay(_selectedDay, day);
                   },
                   onDaySelected: (selectedDay, focusedDay) {
-                    if (!isSameDay(_selectedDay, selectedDay)) {
-                      // Call `setState()` when updating the selected day
-                      setState(() {
-                        _selectedDay = selectedDay;
-                        _focusedDay = focusedDay;
-                        // _calendarFormat = CalendarFormat.twoWeeks;
-                      });
-                      showWidget = true;
-                      showDialog(
-                        context: context,
-                        builder: (BuildContext context) =>
-                            _buildPopupDialog(context),
-                      );
-                    }
+                    // if (!isSameDay(_selectedDay, selectedDay)) {
+                    // Call `setState()` when updating the selected day
+                    setState(() {
+                      _selectedDay = selectedDay;
+                      _focusedDay = focusedDay;
+                      // _calendarFormat = CalendarFormat.twoWeeks;
+                    });
+                    showWidget = true;
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) =>
+                          _buildPopupDialog(context),
+                    );
                   },
+                  // },
                   onFormatChanged: (format) {
                     if (_calendarFormat != format) {
                       // Call `setState()` when updating calendar format
@@ -151,12 +169,213 @@ class _TableBasicsState extends State<ApptPage> {
                   onPageChanged: (focusedDay) {
                     _focusedDay = focusedDay;
                   },
+                  eventLoader: _getEventsfromDay,
                 ),
               ),
             ),
+            ..._getEventsfromDay(_selectedDay as DateTime).map(
+              (Event event) => GestureDetector(
+                  onTap: () {
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) =>
+                          _buildEditCallPopup(context),
+                    );
+                  },
+                  child: Card(
+                    shape: RoundedRectangleBorder(
+                        side: BorderSide(color: Colors.grey),
+                        borderRadius: BorderRadius.circular(15.0)),
+                    child: ListTile(
+                      title: Text(event.title + ' at ' + event.sessionTime),
+                    ),
+                  )),
+            )
           ],
         ),
       )));
+  Widget _buildEditCallPopup(
+    BuildContext context,
+  ) {
+    return StatefulBuilder(
+      builder: (context, setState) => AlertDialog(
+          backgroundColor: Color(0xff41434D),
+          title: cancelClicked
+              ? Row(children: [
+                  Text(
+                    'Confirmation',
+                    style: GoogleFonts.roboto(
+                        textStyle: TextStyle(color: Colors.white)),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: Container(
+                        padding: EdgeInsets.fromLTRB(200, 0, 0, 50),
+                        child: Icon(
+                          Icons.cancel,
+                          color: Colors.white,
+                        )),
+                  ),
+                ])
+              : Row(children: [
+                  Text(
+                    'Edit Call',
+                    style: GoogleFonts.roboto(
+                        textStyle: TextStyle(color: Colors.white)),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: Container(
+                        padding: EdgeInsets.fromLTRB(200, 0, 0, 50),
+                        child: Icon(
+                          Icons.cancel,
+                          color: Colors.white,
+                        )),
+                  ),
+                ]),
+          content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    cancelClicked
+                        ? Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                                Row(
+                                  children: [
+                                    Text(
+                                        DateFormat("EEEE")
+                                            .format(_selectedDay as DateTime),
+                                        style: GoogleFonts.roboto(
+                                          textStyle: TextStyle(
+                                              fontSize: 16.0,
+                                              color: Colors.white),
+                                        )),
+                                  ],
+                                ),
+                                SizedBox(
+                                  height: 15,
+                                ),
+                                Row(children: [
+                                  Icon(
+                                    Icons.calendar_month,
+                                    color: Colors.white,
+                                  ),
+                                  SizedBox(
+                                    width: 5,
+                                  ),
+                                  Text(
+                                      DateFormat("MMMM dd, yyyy")
+                                          .format(_selectedDay as DateTime),
+                                      // if i have to do this one more im gonna jump
+                                      style: GoogleFonts.roboto(
+                                        textStyle:
+                                            TextStyle(color: Colors.white),
+                                      ))
+                                ]),
+                                SizedBox(
+                                  height: 10,
+                                ),
+                                Row(children: [
+                                  Icon(
+                                    Icons.access_time,
+                                    color: Colors.white,
+                                  ),
+                                  SizedBox(
+                                    width: 5,
+                                  ),
+                                  Text('waa',
+                                      style: GoogleFonts.roboto(
+                                        textStyle:
+                                            TextStyle(color: Colors.white),
+                                      ))
+                                ])
+                              ])
+                        : Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                                Row(children: [
+                                  Icon(
+                                    Icons.alarm,
+                                    color: Colors.white,
+                                  ),
+                                  SizedBox(
+                                    width: 5,
+                                  ),
+                                  Text(
+                                      selectedEvents[_selectedDay]!
+                                          .elementAt(0)
+                                          .sessionTime,
+                                      // if i have to do this one more im gonna jump
+                                      style: GoogleFonts.roboto(
+                                        textStyle:
+                                            TextStyle(color: Colors.white),
+                                      ))
+                                ]),
+                                SizedBox(
+                                  height: 10,
+                                ),
+                                Row(children: [
+                                  Icon(
+                                    Icons.verified_user_outlined,
+                                    color: Colors.white,
+                                  ),
+                                  SizedBox(
+                                    width: 5,
+                                  ),
+                                  Text(
+                                      selectedEvents[_selectedDay]!
+                                          .elementAt(0)
+                                          .title,
+                                      style: GoogleFonts.roboto(
+                                        textStyle:
+                                            TextStyle(color: Colors.white),
+                                      ))
+                                ]),
+                                Row(
+                                  children: [
+                                    ElevatedButton(
+                                      child: Text('Cancel Appointment',
+                                          style: GoogleFonts.roboto(
+                                              textStyle: TextStyle(
+                                                  color: Colors.black,
+                                                  fontSize: 18.0))),
+                                      style: ButtonStyle(
+                                          elevation:
+                                              MaterialStateProperty.all<double>(
+                                                  0),
+                                          backgroundColor:
+                                              MaterialStateProperty.all<Color>(
+                                                  Color(0xff95D4D8)),
+                                          shape: MaterialStateProperty.all<
+                                                  RoundedRectangleBorder>(
+                                              RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(22.0),
+                                          ))),
+                                      onPressed: (() => {
+                                            selectedEvents[
+                                                _selectedDay as DateTime] = [],
+                                            Navigator.pop(context),
+                                            cancelClicked = !cancelClicked,
+                                          }),
+                                    ),
+                                  ],
+                                )
+                              ])
+                  ],
+                )
+              ])),
+    );
+  }
+
   Widget _buildPopupDialog(
     BuildContext context,
   ) {
@@ -223,23 +442,36 @@ class _TableBasicsState extends State<ApptPage> {
                                         )),
                                   ],
                                 ),
+                                SizedBox(
+                                  height: 15,
+                                ),
                                 Row(children: [
                                   Icon(
                                     Icons.calendar_month,
                                     color: Colors.white,
                                   ),
+                                  SizedBox(
+                                    width: 5,
+                                  ),
                                   Text(
-                                      DateFormat("MM-dd-yyyy")
+                                      DateFormat("MMMM dd, yyyy")
                                           .format(_selectedDay as DateTime),
+                                      // if i have to do this one more im gonna jump
                                       style: GoogleFonts.roboto(
                                         textStyle:
                                             TextStyle(color: Colors.white),
                                       ))
                                 ]),
+                                SizedBox(
+                                  height: 10,
+                                ),
                                 Row(children: [
                                   Icon(
                                     Icons.access_time,
                                     color: Colors.white,
+                                  ),
+                                  SizedBox(
+                                    width: 5,
                                   ),
                                   Text(times[0],
                                       style: GoogleFonts.roboto(
@@ -249,7 +481,9 @@ class _TableBasicsState extends State<ApptPage> {
                                 ])
                               ])
                         : ElevatedButton(
-                            child: Text(times[0]),
+                            child: Text(times[0],
+                                style: GoogleFonts.roboto(
+                                    textStyle: TextStyle(color: Colors.black))),
                             style: ButtonStyle(
                                 textStyle: MaterialStateProperty.all<TextStyle>(
                                     GoogleFonts.roboto(
@@ -265,8 +499,12 @@ class _TableBasicsState extends State<ApptPage> {
                                   borderRadius: BorderRadius.circular(18.0),
                                 ))),
                             onPressed: (() => setState(() {
+                                  // if((_selectedDay as DateTime).isBefore(DateTime.now())){
                                   timeClicked = !timeClicked;
-                                  selectedTime = !selectedTime;
+                                  selectedTime = times[0];
+                                  // } else {
+                                  //   null;
+                                  // }
                                 })),
                           ),
                     // ),
@@ -276,7 +514,9 @@ class _TableBasicsState extends State<ApptPage> {
                     Visibility(
                       visible: timeClicked == false,
                       child: ElevatedButton(
-                        child: Text(times[1]),
+                        child: Text(times[1],
+                            style: GoogleFonts.roboto(
+                                textStyle: TextStyle(color: Colors.black))),
                         style: ButtonStyle(
                             textStyle: MaterialStateProperty.all<TextStyle>(
                                 GoogleFonts.roboto(
@@ -290,7 +530,7 @@ class _TableBasicsState extends State<ApptPage> {
                             ))),
                         onPressed: (() => setState(() {
                               timeClicked = !timeClicked;
-                              selectedTime2 = !selectedTime2;
+                              selectedTime = times[1];
                             })),
                       ),
                     ),
@@ -300,7 +540,9 @@ class _TableBasicsState extends State<ApptPage> {
                     Visibility(
                       visible: timeClicked == false,
                       child: ElevatedButton(
-                        child: Text(times[2]),
+                        child: Text(times[2],
+                            style: GoogleFonts.roboto(
+                                textStyle: TextStyle(color: Colors.black))),
                         style: ButtonStyle(
                             textStyle: MaterialStateProperty.all<TextStyle>(
                                 GoogleFonts.roboto(
@@ -327,7 +569,7 @@ class _TableBasicsState extends State<ApptPage> {
                             child: Text('Confirm Appointment',
                                 style: GoogleFonts.roboto(
                                     textStyle: TextStyle(
-                                        color: Colors.black, fontSize: 20.0))),
+                                        color: Colors.black, fontSize: 18.0))),
                             style: ButtonStyle(
                                 elevation: MaterialStateProperty.all<double>(0),
                                 backgroundColor:
@@ -336,9 +578,27 @@ class _TableBasicsState extends State<ApptPage> {
                                 shape: MaterialStateProperty.all<
                                         RoundedRectangleBorder>(
                                     RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20.0),
+                                  borderRadius: BorderRadius.circular(22.0),
                                 ))),
-                            onPressed: (() => null),
+                            onPressed: (() => {
+                                  if (selectedEvents[_selectedDay] != null)
+                                    {
+                                      selectedEvents[_selectedDay as DateTime]
+                                          ?.add(
+                                        Event(selectedTime, 'Session with Sam'),
+                                      )
+                                    }
+                                  else
+                                    {
+                                      selectedEvents[_selectedDay as DateTime] =
+                                          [
+                                        Event(selectedTime, 'Session with Sam')
+                                      ]
+                                    },
+                                  Navigator.pop(context),
+                                  selectedTime = "",
+                                  timeClicked = false,
+                                }),
                           ),
                         )),
                   ],
