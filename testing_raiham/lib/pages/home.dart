@@ -10,6 +10,15 @@ import './appointments.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class HomePage extends StatelessWidget {
+  final ApptPage appt = ApptPage();
+
+  Map<DateTime, List<Event>> selectedEvents = {
+    DateTime.utc(2022, 3, 3): [Event('3:30-4:00 PM', "Call with Jane")],
+    DateTime.utc(2022, 3, 8): [Event('4:00-4:30 PM', "Call with Lilly")],
+    DateTime.utc(2022, 3, 16): [Event('4:00-4:30 PM', "Call with Sam")],
+    DateTime.utc(2022, 3, 21): [Event('1:30-2:00 PM', "Call with Toby")],
+    DateTime.utc(2022, 3, 25): [Event('9:00-9:30 PM', "Call with Jane")],
+  };
   @override
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(
@@ -208,25 +217,27 @@ class HomePage extends StatelessWidget {
                       ),
                     ],
                   ),
-                  ElevatedButton(
-                    style: ButtonStyle(
-                        elevation: MaterialStateProperty.all<double>(0),
-                        backgroundColor: MaterialStateProperty.all<Color>(
-                            Color.fromRGBO(149, 212, 216, 1)),
-                        shape:
-                            MaterialStateProperty.all<RoundedRectangleBorder>(
-                                RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(18.0),
-                                    side: const BorderSide(
-                                        color: Color(0xff95D4D8))))),
-                    onPressed: () => _presentAppointmentDetailsOverlay(
-                        'Jane|March 21, 2022|3:30 - 4:00pm'),
-                    child: Text(
-                      'Appointment Placeholder',
-                      style: GoogleFonts.roboto(
-                          textStyle: Theme.of(context).textTheme.button),
-                    ),
-                  ),
+                  // selectedEvents.forEach(
+                  //   (day, events) =>(
+                  //     events.map(Event event)=>(
+                  //       GestureDetector(
+                  //           onTap: () {
+                  //             showDialog(
+                  //               context: context,
+                  //               builder: (BuildContext context) =>
+                  //                   buildEditCallPopup(context),
+                  //             );
+                  //           },
+                  //           child: Card(
+                  //             shape: RoundedRectangleBorder(
+                  //                 side: BorderSide(color: Colors.grey),
+                  //                 borderRadius: BorderRadius.circular(15.0)),
+                  //             child: ListTile(
+                  //               title: Text(event.title + ' at ' + event.sessionTime),
+                  //             ),
+                  //           ))
+                  //     ))
+                  // ),
                   ElevatedButton(
                     style: ButtonStyle(
                         elevation: MaterialStateProperty.all<double>(0),

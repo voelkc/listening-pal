@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import './onboarding.dart';
+import './home.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
 
@@ -19,7 +20,7 @@ class _TableBasicsState extends State<ApptPage> {
   CalendarFormat _calendarFormat = CalendarFormat.month;
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay = DateTime.now();
-
+  final HomePage home = HomePage();
   bool showWidget = false;
   bool timeClicked = false;
   bool cancelClicked = false;
@@ -54,19 +55,25 @@ class _TableBasicsState extends State<ApptPage> {
       appBar: AppBar(
           backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           title: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: const <Widget>[
-              Icon(
-                Icons.folder,
-                color: Color(0xff41434D),
-                size: 24.0,
-                semanticLabel: 'Links to resources page',
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              TextButton(
+                onPressed: () => home.goToResources(context),
+                child: Text(
+                  'Resources',
+                  style: GoogleFonts.roboto(
+                          textStyle: Theme.of(context).textTheme.bodyText1)
+                      .copyWith(decoration: TextDecoration.none),
+                ),
               ),
-              Icon(
-                Icons.settings,
-                color: Color(0xff41434D),
-                size: 30.0,
-                semanticLabel: 'Links to settings page',
+              TextButton(
+                onPressed: () => launchURL('https://listeningpal.com/'),
+                child: Text(
+                  'Account',
+                  style: GoogleFonts.roboto(
+                          textStyle: Theme.of(context).textTheme.bodyText1)
+                      .copyWith(decoration: TextDecoration.none),
+                ),
               ),
             ],
           )),
@@ -179,7 +186,7 @@ class _TableBasicsState extends State<ApptPage> {
                     showDialog(
                       context: context,
                       builder: (BuildContext context) =>
-                          _buildEditCallPopup(context),
+                          buildEditCallPopup(context),
                     );
                   },
                   child: Card(
@@ -194,7 +201,7 @@ class _TableBasicsState extends State<ApptPage> {
           ],
         ),
       )));
-  Widget _buildEditCallPopup(
+  Widget buildEditCallPopup(
     BuildContext context,
   ) {
     return StatefulBuilder(
@@ -311,8 +318,11 @@ class _TableBasicsState extends State<ApptPage> {
                                   ),
                                   Text(
                                       selectedEvents[_selectedDay]!
-                                          .elementAt(0)
-                                          .sessionTime,
+                                              .elementAt(0)
+                                              .sessionTime +
+                                          ' on ' +
+                                          DateFormat('MMMM dd, yyyy')
+                                              .format(_selectedDay as DateTime),
                                       // if i have to do this one more im gonna jump
                                       style: GoogleFonts.roboto(
                                         textStyle:
@@ -340,33 +350,36 @@ class _TableBasicsState extends State<ApptPage> {
                                       ))
                                 ]),
                                 Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    ElevatedButton(
-                                      child: Text('Cancel Appointment',
-                                          style: GoogleFonts.roboto(
-                                              textStyle: TextStyle(
-                                                  color: Colors.black,
-                                                  fontSize: 18.0))),
-                                      style: ButtonStyle(
-                                          elevation:
-                                              MaterialStateProperty.all<double>(
-                                                  0),
-                                          backgroundColor:
-                                              MaterialStateProperty.all<Color>(
-                                                  Color(0xff95D4D8)),
-                                          shape: MaterialStateProperty.all<
-                                                  RoundedRectangleBorder>(
-                                              RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(22.0),
-                                          ))),
-                                      onPressed: (() => {
-                                            selectedEvents[
-                                                _selectedDay as DateTime] = [],
-                                            Navigator.pop(context),
-                                            cancelClicked = !cancelClicked,
-                                          }),
-                                    ),
+                                    Padding(
+                                      padding:
+                                          EdgeInsets.fromLTRB(60, 20, 0, 0),
+                                      child: ElevatedButton(
+                                        child: Text('Cancel Appointment',
+                                            style: GoogleFonts.roboto(
+                                                textStyle: TextStyle(
+                                                    color: Colors.black,
+                                                    fontSize: 18.0))),
+                                        style: ButtonStyle(
+                                            elevation: MaterialStateProperty
+                                                .all<double>(0),
+                                            backgroundColor:
+                                                MaterialStateProperty.all<
+                                                    Color>(Color(0xff95D4D8)),
+                                            shape: MaterialStateProperty.all<
+                                                    RoundedRectangleBorder>(
+                                                RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(22.0),
+                                            ))),
+                                        onPressed: (() => {
+                                              selectedEvents[_selectedDay
+                                                  as DateTime] = [],
+                                              cancelClicked = !cancelClicked,
+                                            }),
+                                      ),
+                                    )
                                   ],
                                 )
                               ])
@@ -595,6 +608,7 @@ class _TableBasicsState extends State<ApptPage> {
                                         Event(selectedTime, 'Session with Sam')
                                       ]
                                     },
+                                  _getEventsfromDay(_selectedDay as DateTime),
                                   Navigator.pop(context),
                                   selectedTime = "",
                                   timeClicked = false,
