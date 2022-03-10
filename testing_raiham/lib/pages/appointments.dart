@@ -57,9 +57,14 @@ class _TableBasicsState extends State<ApptPage> {
           title: Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              Icon(
-                Icons.arrow_back_ios_new,
-                color: Colors.black,
+              IconButton(
+                onPressed: ()=> goToHomePage(context),
+                icon:       const Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  color:  Color(0xff41434D),
+                  size: 24.0,
+                  semanticLabel: 'Text to announce in accessibility modes',
+                ),
               ),
               TextButton(
                 onPressed: () => goToHomePage(context),
