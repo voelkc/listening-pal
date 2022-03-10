@@ -51,7 +51,6 @@ class _TableBasicsState extends State<ApptPage> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-      // resizeToAvoidBottomInset: false,
       appBar: AppBar(
           backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           title: Row(
@@ -150,12 +149,9 @@ class _TableBasicsState extends State<ApptPage> {
                     return isSameDay(_selectedDay, day);
                   },
                   onDaySelected: (selectedDay, focusedDay) {
-                    // if (!isSameDay(_selectedDay, selectedDay)) {
-                    // Call `setState()` when updating the selected day
                     setState(() {
                       _selectedDay = selectedDay;
                       _focusedDay = focusedDay;
-                      // _calendarFormat = CalendarFormat.twoWeeks;
                     });
                     showWidget = true;
                     showDialog(
@@ -164,10 +160,8 @@ class _TableBasicsState extends State<ApptPage> {
                           _buildPopupDialog(context),
                     );
                   },
-                  // },
                   onFormatChanged: (format) {
                     if (_calendarFormat != format) {
-                      // Call `setState()` when updating calendar format
                       setState(() {
                         _calendarFormat = format;
                       });
@@ -180,27 +174,47 @@ class _TableBasicsState extends State<ApptPage> {
                 ),
               ),
             ),
-            ..._getEventsfromDay(_selectedDay as DateTime).map(
-              (Event event) => GestureDetector(
-                  onTap: () {
-                    showDialog(
-                      context: context,
-                      builder: (BuildContext context) =>
-                          buildEditCallPopup(context),
-                    );
-                  },
-                  child: Card(
-                    shape: RoundedRectangleBorder(
-                        side: BorderSide(color: Colors.grey),
-                        borderRadius: BorderRadius.circular(15.0)),
-                    child: ListTile(
-                      title: Text(event.title + ' at ' + event.sessionTime),
-                    ),
-                  )),
-            )
+            selectedEvents[_selectedDay as DateTime] != null
+                ? ListView(
+                    key: selectedEvents[_selectedDay as DateTime]!
+                                .length
+                                .toString() !=
+                            null
+                        ? Key(selectedEvents[_selectedDay as DateTime]!
+                            .length
+                            .toString())
+                        : Key("0"),
+                    padding: EdgeInsets.all(8),
+                    shrinkWrap: true,
+                    children: [
+                      ..._getEventsfromDay(_selectedDay as DateTime).map(
+                        (Event event) => GestureDetector(
+                            onTap: () {
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) =>
+                                    buildEditCallPopup(context),
+                              );
+                            },
+                            child: Card(
+                              shape: RoundedRectangleBorder(
+                                  side: BorderSide(color: Colors.grey),
+                                  borderRadius: BorderRadius.circular(15.0)),
+                              child: ListTile(
+                                title: Text(
+                                    event.title + ' at ' + event.sessionTime),
+                              ),
+                            )),
+                      )
+                    ],
+                  )
+                : Text('No events',
+                    style: GoogleFonts.roboto(
+                        textStyle: TextStyle(color: Colors.white))),
           ],
         ),
       )));
+
   Widget buildEditCallPopup(
     BuildContext context,
   ) {
@@ -210,7 +224,7 @@ class _TableBasicsState extends State<ApptPage> {
           title: cancelClicked
               ? Row(children: [
                   Text(
-                    'Confirmation',
+                    'Cancellation Confirmed',
                     style: GoogleFonts.roboto(
                         textStyle: TextStyle(color: Colors.white)),
                   ),
@@ -255,55 +269,17 @@ class _TableBasicsState extends State<ApptPage> {
                         ? Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                                Row(
-                                  children: [
-                                    Text(
-                                        DateFormat("EEEE")
-                                            .format(_selectedDay as DateTime),
-                                        style: GoogleFonts.roboto(
-                                          textStyle: TextStyle(
-                                              fontSize: 16.0,
-                                              color: Colors.white),
-                                        )),
-                                  ],
-                                ),
-                                SizedBox(
-                                  height: 15,
-                                ),
-                                Row(children: [
-                                  Icon(
-                                    Icons.calendar_month,
-                                    color: Colors.white,
-                                  ),
-                                  SizedBox(
-                                    width: 5,
-                                  ),
-                                  Text(
-                                      DateFormat("MMMM dd, yyyy")
-                                          .format(_selectedDay as DateTime),
-                                      // if i have to do this one more im gonna jump
-                                      style: GoogleFonts.roboto(
-                                        textStyle:
-                                            TextStyle(color: Colors.white),
-                                      ))
-                                ]),
-                                SizedBox(
-                                  height: 10,
-                                ),
-                                Row(children: [
-                                  Icon(
-                                    Icons.access_time,
-                                    color: Colors.white,
-                                  ),
-                                  SizedBox(
-                                    width: 5,
-                                  ),
-                                  Text('waa',
-                                      style: GoogleFonts.roboto(
-                                        textStyle:
-                                            TextStyle(color: Colors.white),
-                                      ))
-                                ])
+                                Text('Your appointment has been cancelled.',
+                                    style: GoogleFonts.roboto(
+                                      textStyle: TextStyle(
+                                          fontSize: 16.0, color: Colors.white),
+                                    )),
+                                Text(
+                                    '1 credit has been refunded to your account.',
+                                    style: GoogleFonts.roboto(
+                                      textStyle: TextStyle(
+                                          fontSize: 16.0, color: Colors.white),
+                                    )),
                               ])
                         : Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -374,13 +350,44 @@ class _TableBasicsState extends State<ApptPage> {
                                                   BorderRadius.circular(22.0),
                                             ))),
                                         onPressed: (() => {
-                                              selectedEvents[_selectedDay
-                                                  as DateTime] = [],
-                                              cancelClicked = !cancelClicked,
+                                              setState(
+                                                () => {
+                                                  selectedEvents[_selectedDay
+                                                      as DateTime] = [],
+                                                  cancelClicked =
+                                                      !cancelClicked,
+                                                },
+                                              )
                                             }),
                                       ),
-                                    )
+                                    ),
                                   ],
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.fromLTRB(100, 20, 0, 0),
+                                  child: ElevatedButton(
+                                    child: Text('Go Back',
+                                        style: GoogleFonts.roboto(
+                                            textStyle: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 18.0))),
+                                    style: ButtonStyle(
+                                        elevation:
+                                            MaterialStateProperty.all<double>(
+                                                0),
+                                        backgroundColor:
+                                            MaterialStateProperty.all<Color>(
+                                                Color(0xff41434D)),
+                                        shape: MaterialStateProperty.all<
+                                                RoundedRectangleBorder>(
+                                            RoundedRectangleBorder(
+                                          side: BorderSide(color: Colors.white),
+                                          borderRadius:
+                                              BorderRadius.circular(22.0),
+                                        ))),
+                                    onPressed: (() =>
+                                        {Navigator.of(context).pop()}),
+                                  ),
                                 )
                               ])
                   ],
@@ -469,7 +476,6 @@ class _TableBasicsState extends State<ApptPage> {
                                   Text(
                                       DateFormat("MMMM dd, yyyy")
                                           .format(_selectedDay as DateTime),
-                                      // if i have to do this one more im gonna jump
                                       style: GoogleFonts.roboto(
                                         textStyle:
                                             TextStyle(color: Colors.white),
@@ -608,7 +614,6 @@ class _TableBasicsState extends State<ApptPage> {
                                         Event(selectedTime, 'Session with Sam')
                                       ]
                                     },
-                                  _getEventsfromDay(_selectedDay as DateTime),
                                   Navigator.pop(context),
                                   selectedTime = "",
                                   timeClicked = false,

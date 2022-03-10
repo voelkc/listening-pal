@@ -36,6 +36,6 @@ class MyApp extends StatelessWidget {
                 color: Color(0xff41434D)), // clickable text!
           ),
         ),
-        home: OnboardingPage(),
+        home: ApptPage(),
       );
 }
