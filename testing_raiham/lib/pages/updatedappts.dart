@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import './onboarding.dart';
-import './updatedappts.dart';
 import './home.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
+import './appointments.dart';
 
 class Event {
   const Event(this.sessionTime, this.title);
@@ -12,15 +12,15 @@ class Event {
   final String title;
 }
 
-class ApptPage extends StatefulWidget {
+class UpdatedApptPage extends StatefulWidget {
   @override
   _TableBasicsState createState() => _TableBasicsState();
 }
 
-class _TableBasicsState extends State<ApptPage> {
+class _TableBasicsState extends State<UpdatedApptPage> {
   CalendarFormat _calendarFormat = CalendarFormat.month;
   DateTime _focusedDay = DateTime.now();
-  DateTime? _selectedDay = DateTime.now();
+  DateTime? _selectedDay = DateTime.utc(2022, 3, 11);
   final HomePage home = HomePage();
   bool showWidget = false;
   bool timeClicked = false;
@@ -30,6 +30,7 @@ class _TableBasicsState extends State<ApptPage> {
   Map<DateTime, List<Event>> selectedEvents = {
     DateTime.utc(2022, 3, 3): [Event('3:30-4 PM', "Call with Jane")],
     DateTime.utc(2022, 3, 8): [Event('4-4:30 PM', "Call with Lilly")],
+    DateTime.utc(2022, 3, 11): [Event('3:30-4 PM', 'Call with Sam')],
     DateTime.utc(2022, 3, 16): [Event('4-4:30 PM', "Call with Sam")],
     DateTime.utc(2022, 3, 21): [Event('1:30-2 PM', "Call with Toby")],
     DateTime.utc(2022, 3, 25): [Event('9-9:30 PM', "Call with Jane")],
@@ -75,7 +76,6 @@ class _TableBasicsState extends State<ApptPage> {
                 onPressed: () => home.goToResources(context),
                 child: Text(
                   'Resources',
-                  textAlign: TextAlign.right,
                   style: GoogleFonts.roboto(
                           textStyle: Theme.of(context).textTheme.bodyText1)
                       .copyWith(decoration: TextDecoration.none),
@@ -133,8 +133,7 @@ class _TableBasicsState extends State<ApptPage> {
                     child: Text(
                       'Purchase Credits',
                       style: GoogleFonts.roboto(
-                          textStyle: TextStyle(
-                              fontSize: 14.0, color: Color(0xff41434D))),
+                          textStyle: Theme.of(context).textTheme.button),
                     ),
                   ),
                 ]),
@@ -268,7 +267,7 @@ class _TableBasicsState extends State<ApptPage> {
                       Navigator.of(context).pop();
                     },
                     child: Container(
-                        padding: EdgeInsets.fromLTRB(200, 0, 0, 50),
+                        padding: EdgeInsets.fromLTRB(150, 0, 0, 50),
                         child: Icon(
                           Icons.cancel,
                           color: Colors.white,
@@ -346,8 +345,12 @@ class _TableBasicsState extends State<ApptPage> {
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Padding(
-                                      padding:
-                                          EdgeInsets.fromLTRB(60, 20, 0, 0),
+                                      padding: EdgeInsets.fromLTRB(
+                                          MediaQuery.of(context).size.width *
+                                              0.1,
+                                          20,
+                                          0,
+                                          0),
                                       child: ElevatedButton(
                                         child: Text('Cancel Appointment',
                                             style: GoogleFonts.roboto(
@@ -367,21 +370,27 @@ class _TableBasicsState extends State<ApptPage> {
                                                   BorderRadius.circular(22.0),
                                             ))),
                                         onPressed: (() => {
-                                              setState(
-                                                () => {
-                                                  selectedEvents[_selectedDay
-                                                      as DateTime] = [],
-                                                  cancelClicked =
-                                                      !cancelClicked,
-                                                },
-                                              )
+                                              // one day this will work :'(( ))
+                                              // setState(
+                                              //   () => {
+                                              //     selectedEvents[_selectedDay
+                                              //         as DateTime] = [],
+                                              //     cancelClicked =
+                                              //         !cancelClicked,
+                                              //   },
+                                              // )
+                                              goToAppt(context)
                                             }),
                                       ),
                                     ),
                                   ],
                                 ),
                                 Padding(
-                                  padding: EdgeInsets.fromLTRB(100, 20, 0, 0),
+                                  padding: EdgeInsets.fromLTRB(
+                                      MediaQuery.of(context).size.width * 0.225,
+                                      20,
+                                      0,
+                                      0),
                                   child: ElevatedButton(
                                     child: Text('Go Back',
                                         style: GoogleFonts.roboto(
@@ -416,7 +425,7 @@ class _TableBasicsState extends State<ApptPage> {
   Widget _buildPopupDialog(
     BuildContext context,
   ) {
-    var times = ['3-3:30pm', '3:30-4pm', '4-4:30pm'];
+    var times = ['3:00-3:30pm', '3:30-4:00pm', '4:00-4:30pm'];
     return StatefulBuilder(
       builder: (context, setState) => AlertDialog(
           backgroundColor: Color(0xff41434D),
@@ -432,7 +441,8 @@ class _TableBasicsState extends State<ApptPage> {
                       Navigator.of(context).pop();
                     },
                     child: Container(
-                        padding: EdgeInsets.fromLTRB(200, 0, 0, 50),
+                        padding: EdgeInsets.fromLTRB(
+                            MediaQuery.of(context).size.width * 0.25, 0, 0, 50),
                         child: Icon(
                           Icons.cancel,
                           color: Colors.white,
@@ -450,8 +460,7 @@ class _TableBasicsState extends State<ApptPage> {
                       Navigator.of(context).pop();
                     },
                     child: Container(
-                        padding: EdgeInsets.fromLTRB(
-                            MediaQuery.of(context).size.width * 0.25, 0, 0, 40),
+                        padding: EdgeInsets.fromLTRB(200, 0, 0, 50),
                         child: Icon(
                           Icons.cancel,
                           color: Colors.white,
@@ -524,27 +533,30 @@ class _TableBasicsState extends State<ApptPage> {
                             style: ButtonStyle(
                                 textStyle: MaterialStateProperty.all<TextStyle>(
                                     GoogleFonts.roboto(
-                                        textStyle: TextStyle(
-                                            color: Colors.black,
-                                            fontSize: 11.0))),
+                                        textStyle:
+                                            TextStyle(color: Colors.black))),
                                 elevation: MaterialStateProperty.all<double>(0),
                                 backgroundColor:
                                     MaterialStateProperty.all<Color>(
                                         Color(0xff95D4D8)),
-                                maximumSize: MaterialStateProperty.all<Size>(
-                                    Size(
-                                        MediaQuery.of(context).size.width * 0.2,
-                                        40)),
                                 shape: MaterialStateProperty.all<
                                         RoundedRectangleBorder>(
                                     RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(18.0),
                                 ))),
                             onPressed: (() => setState(() {
+                                  // if((_selectedDay as DateTime).isBefore(DateTime.now())){
                                   timeClicked = !timeClicked;
                                   selectedTime = times[0];
+                                  // } else {
+                                  //   null;
+                                  // }
                                 })),
                           ),
+                    // ),
+                    SizedBox(
+                      width: 5,
+                    ),
                     Visibility(
                       visible: timeClicked == false,
                       child: ElevatedButton(
@@ -554,19 +566,22 @@ class _TableBasicsState extends State<ApptPage> {
                         style: ButtonStyle(
                             textStyle: MaterialStateProperty.all<TextStyle>(
                                 GoogleFonts.roboto(
-                                    textStyle: TextStyle(
-                                        color: Colors.black, fontSize: 11.0))),
+                                    textStyle: TextStyle(color: Colors.black))),
                             elevation: MaterialStateProperty.all<double>(0),
                             backgroundColor: MaterialStateProperty.all<Color>(
                                 Color(0xff95D4D8)),
-                            maximumSize: MaterialStateProperty.all<Size>(Size(
-                                MediaQuery.of(context).size.width * 0.2, 40)),
                             shape: MaterialStateProperty.all<
                                 RoundedRectangleBorder>(RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(18.0),
                             ))),
-                        onPressed: (() => goToUpdatedAppt(context)),
+                        onPressed: (() => setState(() {
+                              timeClicked = !timeClicked;
+                              selectedTime = times[1];
+                            })),
                       ),
+                    ),
+                    SizedBox(
+                      width: 5,
                     ),
                     Visibility(
                       visible: timeClicked == false,
@@ -577,13 +592,10 @@ class _TableBasicsState extends State<ApptPage> {
                         style: ButtonStyle(
                             textStyle: MaterialStateProperty.all<TextStyle>(
                                 GoogleFonts.roboto(
-                                    textStyle: TextStyle(
-                                        color: Colors.black, fontSize: 11.0))),
+                                    textStyle: TextStyle(color: Colors.black))),
                             elevation: MaterialStateProperty.all<double>(0),
                             backgroundColor: MaterialStateProperty.all<Color>(
                                 Color(0xff808080)),
-                            maximumSize: MaterialStateProperty.all<Size>(Size(
-                                MediaQuery.of(context).size.width * 0.2, 40)),
                             shape: MaterialStateProperty.all<
                                 RoundedRectangleBorder>(RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(18.0),
@@ -597,39 +609,43 @@ class _TableBasicsState extends State<ApptPage> {
                   children: [
                     Visibility(
                         visible: timeClicked == true,
-                        child: ElevatedButton(
-                          child: Text('Confirm Appointment',
-                              style: GoogleFonts.roboto(
-                                  textStyle: TextStyle(
-                                      color: Colors.black, fontSize: 18.0))),
-                          style: ButtonStyle(
-                              elevation: MaterialStateProperty.all<double>(0),
-                              backgroundColor: MaterialStateProperty.all<Color>(
-                                  Color(0xff95D4D8)),
-                              shape: MaterialStateProperty.all<
-                                      RoundedRectangleBorder>(
-                                  RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(22.0),
-                              ))),
-                          onPressed: (() => {
-                                if (selectedEvents[_selectedDay] != null)
-                                  {
-                                    selectedEvents[_selectedDay as DateTime]
-                                        ?.add(
-                                      Event(selectedTime, 'Session with Sam'),
-                                    )
-                                  }
-                                else
-                                  {
-                                    selectedEvents[_selectedDay as DateTime] = [
-                                      Event(selectedTime, 'Session with Sam')
-                                    ]
-                                  },
-                                Navigator.pop(context),
-                                selectedTime = "",
-                                timeClicked = false,
-                              }),
-                          // ),
+                        child: Padding(
+                          padding: EdgeInsets.fromLTRB(80, 50, 0, 0),
+                          child: ElevatedButton(
+                            child: Text('Confirm Appointment',
+                                style: GoogleFonts.roboto(
+                                    textStyle: TextStyle(
+                                        color: Colors.black, fontSize: 18.0))),
+                            style: ButtonStyle(
+                                elevation: MaterialStateProperty.all<double>(0),
+                                backgroundColor:
+                                    MaterialStateProperty.all<Color>(
+                                        Color(0xff95D4D8)),
+                                shape: MaterialStateProperty.all<
+                                        RoundedRectangleBorder>(
+                                    RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(22.0),
+                                ))),
+                            onPressed: (() => {
+                                  if (selectedEvents[_selectedDay] != null)
+                                    {
+                                      selectedEvents[_selectedDay as DateTime]
+                                          ?.add(
+                                        Event(selectedTime, 'Session with Sam'),
+                                      )
+                                    }
+                                  else
+                                    {
+                                      selectedEvents[_selectedDay as DateTime] =
+                                          [
+                                        Event(selectedTime, 'Session with Sam')
+                                      ]
+                                    },
+                                  Navigator.pop(context),
+                                  selectedTime = "",
+                                  timeClicked = false,
+                                }),
+                          ),
                         )),
                   ],
                 )
@@ -638,13 +654,12 @@ class _TableBasicsState extends State<ApptPage> {
   }
 }
 
-void goToHomePage(context) => Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (_) => HomePage()),
+void goToOnBoarding(context) => Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (_) => OnboardingPage()),
     );
-void goToUpdatedAppt(context) => Navigator.of(context).pushReplacement(
+void goToAppt(context) => Navigator.of(context).pushReplacement(
       PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              UpdatedApptPage(),
+          pageBuilder: (context, animation, secondaryAnimation) => ApptPage(),
           transitionDuration: Duration.zero,
           reverseTransitionDuration: Duration.zero),
     );
