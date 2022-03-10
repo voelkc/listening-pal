@@ -268,7 +268,7 @@ class HomePage extends StatelessWidget {
       );
 
   void goToCall(context) => Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => CallPage()),
+        MaterialPageRoute(builder: (_) => CallPage(key: UniqueKey())),
       );
 
   void goToOnBoarding(context) => Navigator.of(context).pushReplacement(
@@ -1200,7 +1200,7 @@ void _hideAppointmentDetailsOverlay() async {
 }
 
 void _goToCall(context) => Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (_) => CallPage()),
+      MaterialPageRoute(builder: (_) => CallPage(key: UniqueKey())),
     );
 
 void launchURL(url) async {

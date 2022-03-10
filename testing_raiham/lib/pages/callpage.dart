@@ -6,7 +6,35 @@ import './home.dart';
 
 import 'package:url_launcher/url_launcher.dart';
 
-class CallPage extends StatelessWidget {
+class CallPage extends StatefulWidget {
+  const CallPage({Key? key}) : super(key: key);
+  @override
+  State<CallPage> createState() => _CallPage();
+}
+
+class _CallPage extends State<CallPage>{
+  int _timer = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance?.addPostFrameCallback((_) => _runTimer());
+  }
+
+
+  void _incrementTimer() {
+    setState(() {
+      _timer++;
+    });
+  }
+
+  Future<void> _runTimer() async {
+    while(true){
+      await Future.delayed(Duration(seconds: 1));
+      _incrementTimer();
+    }
+  }
+
   @override
   Widget build(BuildContext context) => Scaffold(
         backgroundColor: Theme.of(context).secondaryHeaderColor,
@@ -28,7 +56,7 @@ class CallPage extends StatelessWidget {
                           color: Theme.of(context).scaffoldBackgroundColor),
                     ),
                     Text(
-                      '0:01',
+                      '0:0'+ _timer.toString(),
                       style: GoogleFonts.roboto(
                         textStyle: Theme.of(context).textTheme.bodyText2,
                       ).copyWith(
