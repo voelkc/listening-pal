@@ -62,11 +62,10 @@ class HomePage extends StatelessWidget {
 
         resizeToAvoidBottomInset : false,
 
-
-        body: SingleChildScrollView(
-          child: Stack(
+        body: Stack(
           children: [
-            Padding(
+            SingleChildScrollView(
+              child: Padding(
               padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
@@ -609,12 +608,12 @@ class HomePage extends StatelessWidget {
                 ], // Chillen
               ),
             ),
+  ),
             JoinOverlayView(key: UniqueKey()),
             EndOverlayView(key: UniqueKey()),
             CancelOverlayView(key: UniqueKey()),
             AppointmentDetailsOverlayView(key: UniqueKey()),
           ], //Stack children
-        ),
         ),
       );
 
