@@ -10,6 +10,7 @@ class ResourcesPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(
+        automaticallyImplyLeading: false,
         backgroundColor:  Theme.of(context).scaffoldBackgroundColor,
         title: Row(
           mainAxisAlignment: MainAxisAlignment.start,
