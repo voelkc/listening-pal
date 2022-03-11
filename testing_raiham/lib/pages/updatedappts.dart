@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import './onboarding.dart';
+import './appointments.dart';
 import './home.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
-import './appointments.dart';
 
 class Event {
   const Event(this.sessionTime, this.title);
@@ -19,8 +19,9 @@ class UpdatedApptPage extends StatefulWidget {
 
 class _TableBasicsState extends State<UpdatedApptPage> {
   CalendarFormat _calendarFormat = CalendarFormat.month;
-  DateTime _focusedDay = DateTime.now();
-  DateTime? _selectedDay = DateTime.utc(2022, 3, 11);
+  DateTime todayDate = DateTime.now();
+  DateTime _focusedDay = DateTime.utc(2022, 3, 11);
+  DateTime _selectedDay = DateTime.utc(2022, 3, 11);
   final HomePage home = HomePage();
   bool showWidget = false;
   bool timeClicked = false;
@@ -29,7 +30,7 @@ class _TableBasicsState extends State<UpdatedApptPage> {
 
   Map<DateTime, List<Event>> selectedEvents = {
     DateTime.utc(2022, 3, 3): [Event('3:30-4 PM', "Call with Jane")],
-    DateTime.utc(2022, 3, 8): [Event('4-4:30 PM', "Call with Lilly")],
+    DateTime.utc(2022, 3, 10): [Event('4-4:30 PM', "Call with Lilly")],
     DateTime.utc(2022, 3, 11): [Event('3:30-4 PM', 'Call with Sam')],
     DateTime.utc(2022, 3, 21): [Event('1:30-2 PM', "Call with Toby")],
     DateTime.utc(2022, 3, 25): [Event('9-9:30 PM', "Call with Jane")],
@@ -52,14 +53,20 @@ class _TableBasicsState extends State<UpdatedApptPage> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
           backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           title: Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              Icon(
-                Icons.arrow_back_ios_new,
-                color: Colors.black,
+              IconButton(
+                onPressed: () => goToHomePage(context),
+                icon: const Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  color: Color(0xff41434D),
+                  size: 24.0,
+                  semanticLabel: 'Arrow button to go back to home',
+                ),
               ),
               TextButton(
                 onPressed: () => goToHomePage(context),
@@ -70,11 +77,12 @@ class _TableBasicsState extends State<UpdatedApptPage> {
                       .copyWith(decoration: TextDecoration.none),
                 ),
               ),
-              SizedBox(width: MediaQuery.of(context).size.width * 0.1),
+              SizedBox(width: MediaQuery.of(context).size.width * 0.07),
               TextButton(
                 onPressed: () => home.goToResources(context),
                 child: Text(
                   'Resources',
+                  textAlign: TextAlign.right,
                   style: GoogleFonts.roboto(
                           textStyle: Theme.of(context).textTheme.bodyText1)
                       .copyWith(decoration: TextDecoration.none),
@@ -111,7 +119,7 @@ class _TableBasicsState extends State<UpdatedApptPage> {
                               textStyle: Theme.of(context).textTheme.headline1),
                         ),
                         Text(
-                          'You have X credits available',
+                          'You have 0 credits available',
                           style: GoogleFonts.roboto(
                               textStyle: Theme.of(context).textTheme.bodyText2),
                         ),
@@ -128,11 +136,12 @@ class _TableBasicsState extends State<UpdatedApptPage> {
                                     side: BorderSide(
                                         width: 2.5,
                                         color: Color(0xff95D4D8))))),
-                    onPressed: () => goToOnBoarding(context),
+                    onPressed: () => launchURL('https://listeningpal.com/'),
                     child: Text(
                       'Purchase Credits',
                       style: GoogleFonts.roboto(
-                          textStyle: Theme.of(context).textTheme.button),
+                          textStyle: TextStyle(
+                              fontSize: 14.0, color: Color(0xff41434D))),
                     ),
                   ),
                 ]),
@@ -142,11 +151,11 @@ class _TableBasicsState extends State<UpdatedApptPage> {
                 children: [
                   Padding(
                       padding: EdgeInsets.fromLTRB(10, 15, 0, 0),
-                      child: Text(
-                        'Select Date',
-                        style: GoogleFonts.roboto(
-                            textStyle: Theme.of(context).textTheme.headline6),
-                      )),
+                      child: Text('Select Date',
+                          style: GoogleFonts.roboto(
+                            textStyle: TextStyle(
+                                fontSize: 24.0, color: Color(0xff41434D)),
+                          ))),
                 ]),
             Expanded(
               child: SizedBox(
@@ -155,7 +164,8 @@ class _TableBasicsState extends State<UpdatedApptPage> {
                 child: TableCalendar(
                   firstDay: DateTime(2022),
                   lastDay: DateTime(2023),
-                  focusedDay: _focusedDay,
+                  focusedDay: DateTime.utc(
+                      _focusedDay.year, _focusedDay.month, _focusedDay.day),
                   calendarFormat: _calendarFormat,
                   calendarStyle: CalendarStyle(
                       todayDecoration: BoxDecoration(
@@ -189,20 +199,26 @@ class _TableBasicsState extends State<UpdatedApptPage> {
                 ),
               ),
             ),
-            selectedEvents[_selectedDay as DateTime] != null
+            selectedEvents[DateTime.utc(_selectedDay.year, _selectedDay.month,
+                        _selectedDay.day)] !=
+                    null
                 ? ListView(
-                    key: selectedEvents[_selectedDay as DateTime]!
+                    key: selectedEvents[DateTime.utc(_selectedDay.year,
+                                    _selectedDay.month, _selectedDay.day)]!
                                 .length
                                 .toString() !=
                             null
-                        ? Key(selectedEvents[_selectedDay as DateTime]!
+                        ? Key(selectedEvents[DateTime.utc(_selectedDay.year,
+                                _selectedDay.month, _selectedDay.day)]!
                             .length
                             .toString())
                         : Key("0"),
                     padding: EdgeInsets.all(8),
                     shrinkWrap: true,
                     children: [
-                      ..._getEventsfromDay(_selectedDay as DateTime).map(
+                      ..._getEventsfromDay(DateTime.utc(_selectedDay.year,
+                              _selectedDay.month, _selectedDay.day))
+                          .map(
                         (Event event) => GestureDetector(
                             onTap: () {
                               showDialog(
@@ -241,14 +257,19 @@ class _TableBasicsState extends State<UpdatedApptPage> {
                   Text(
                     'Cancellation Confirmed',
                     style: GoogleFonts.roboto(
-                        textStyle: TextStyle(color: Colors.white)),
+                        textStyle:
+                            TextStyle(color: Colors.white, fontSize: 20)),
                   ),
                   GestureDetector(
                     onTap: () {
                       Navigator.of(context).pop();
                     },
                     child: Container(
-                        padding: EdgeInsets.fromLTRB(200, 0, 0, 50),
+                        padding: EdgeInsets.fromLTRB(
+                            MediaQuery.of(context).size.width * 0.04,
+                            0,
+                            0,
+                            MediaQuery.of(context).size.height * 0.1),
                         child: Icon(
                           Icons.cancel,
                           color: Colors.white,
@@ -266,7 +287,8 @@ class _TableBasicsState extends State<UpdatedApptPage> {
                       Navigator.of(context).pop();
                     },
                     child: Container(
-                        padding: EdgeInsets.fromLTRB(150, 0, 0, 50),
+                        padding: EdgeInsets.fromLTRB(
+                            MediaQuery.of(context).size.width * 0.35, 0, 0, 50),
                         child: Icon(
                           Icons.cancel,
                           color: Colors.white,
@@ -287,13 +309,13 @@ class _TableBasicsState extends State<UpdatedApptPage> {
                                 Text('Your appointment has been cancelled.',
                                     style: GoogleFonts.roboto(
                                       textStyle: TextStyle(
-                                          fontSize: 16.0, color: Colors.white),
+                                          fontSize: 12.0, color: Colors.white),
                                     )),
                                 Text(
                                     '1 credit has been refunded to your account.',
                                     style: GoogleFonts.roboto(
                                       textStyle: TextStyle(
-                                          fontSize: 16.0, color: Colors.white),
+                                          fontSize: 12.0, color: Colors.white),
                                     )),
                               ])
                         : Column(
@@ -346,7 +368,7 @@ class _TableBasicsState extends State<UpdatedApptPage> {
                                     Padding(
                                       padding: EdgeInsets.fromLTRB(
                                           MediaQuery.of(context).size.width *
-                                              0.1,
+                                              0.085,
                                           20,
                                           0,
                                           0),
@@ -369,15 +391,14 @@ class _TableBasicsState extends State<UpdatedApptPage> {
                                                   BorderRadius.circular(22.0),
                                             ))),
                                         onPressed: (() => {
-                                              // one day this will work :'(( ))
-                                              // setState(
-                                              //   () => {
-                                              //     selectedEvents[_selectedDay
-                                              //         as DateTime] = [],
-                                              //     cancelClicked =
-                                              //         !cancelClicked,
-                                              //   },
-                                              // )
+                                              setState(
+                                                () => {
+                                                  selectedEvents[_selectedDay
+                                                      as DateTime] = [],
+                                                  cancelClicked =
+                                                      !cancelClicked,
+                                                },
+                                              ),
                                               goToAppt(context)
                                             }),
                                       ),
@@ -386,7 +407,7 @@ class _TableBasicsState extends State<UpdatedApptPage> {
                                 ),
                                 Padding(
                                   padding: EdgeInsets.fromLTRB(
-                                      MediaQuery.of(context).size.width * 0.225,
+                                      MediaQuery.of(context).size.width * 0.2,
                                       20,
                                       0,
                                       0),
@@ -424,7 +445,7 @@ class _TableBasicsState extends State<UpdatedApptPage> {
   Widget _buildPopupDialog(
     BuildContext context,
   ) {
-    var times = ['3:00-3:30pm', '3:30-4:00pm', '4:00-4:30pm'];
+    var times = ['3-3:30pm', '3:30-4pm', '4-4:30pm'];
     return StatefulBuilder(
       builder: (context, setState) => AlertDialog(
           backgroundColor: Color(0xff41434D),
@@ -441,7 +462,7 @@ class _TableBasicsState extends State<UpdatedApptPage> {
                     },
                     child: Container(
                         padding: EdgeInsets.fromLTRB(
-                            MediaQuery.of(context).size.width * 0.25, 0, 0, 50),
+                            MediaQuery.of(context).size.width * 0.25, 0, 0, 40),
                         child: Icon(
                           Icons.cancel,
                           color: Colors.white,
@@ -459,7 +480,8 @@ class _TableBasicsState extends State<UpdatedApptPage> {
                       Navigator.of(context).pop();
                     },
                     child: Container(
-                        padding: EdgeInsets.fromLTRB(200, 0, 0, 50),
+                        padding: EdgeInsets.fromLTRB(
+                            MediaQuery.of(context).size.width * 0.25, 0, 0, 40),
                         child: Icon(
                           Icons.cancel,
                           color: Colors.white,
@@ -483,7 +505,7 @@ class _TableBasicsState extends State<UpdatedApptPage> {
                                         'Use 1 credit to book the following appointment:',
                                         style: GoogleFonts.roboto(
                                           textStyle: TextStyle(
-                                              fontSize: 16.0,
+                                              fontSize: 12.0,
                                               color: Colors.white),
                                         )),
                                   ],
@@ -500,8 +522,11 @@ class _TableBasicsState extends State<UpdatedApptPage> {
                                     width: 5,
                                   ),
                                   Text(
-                                      DateFormat("MMMM dd, yyyy")
-                                          .format(_selectedDay as DateTime),
+                                      DateFormat("MMMM dd, yyyy").format(
+                                          DateTime.utc(
+                                              _selectedDay.year,
+                                              _selectedDay.month,
+                                              _selectedDay.day)),
                                       style: GoogleFonts.roboto(
                                         textStyle:
                                             TextStyle(color: Colors.white),
@@ -532,55 +557,53 @@ class _TableBasicsState extends State<UpdatedApptPage> {
                             style: ButtonStyle(
                                 textStyle: MaterialStateProperty.all<TextStyle>(
                                     GoogleFonts.roboto(
-                                        textStyle:
-                                            TextStyle(color: Colors.black))),
+                                        textStyle: TextStyle(
+                                            color: Colors.black,
+                                            fontSize: 11.0))),
                                 elevation: MaterialStateProperty.all<double>(0),
                                 backgroundColor:
                                     MaterialStateProperty.all<Color>(
                                         Color(0xff95D4D8)),
+                                maximumSize: MaterialStateProperty.all<Size>(
+                                    Size(
+                                        MediaQuery.of(context).size.width * 0.2,
+                                        40)),
                                 shape: MaterialStateProperty.all<
                                         RoundedRectangleBorder>(
                                     RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(18.0),
                                 ))),
                             onPressed: (() => setState(() {
-                                  // if((_selectedDay as DateTime).isBefore(DateTime.now())){
                                   timeClicked = !timeClicked;
                                   selectedTime = times[0];
-                                  // } else {
-                                  //   null;
-                                  // }
                                 })),
                           ),
-                    // ),
-                    SizedBox(
-                      width: 5,
-                    ),
                     Visibility(
                       visible: timeClicked == false,
                       child: ElevatedButton(
-                        child: Text(times[1],
-                            style: GoogleFonts.roboto(
-                                textStyle: TextStyle(color: Colors.black))),
-                        style: ButtonStyle(
-                            textStyle: MaterialStateProperty.all<TextStyle>(
-                                GoogleFonts.roboto(
-                                    textStyle: TextStyle(color: Colors.black))),
-                            elevation: MaterialStateProperty.all<double>(0),
-                            backgroundColor: MaterialStateProperty.all<Color>(
-                                Color(0xff95D4D8)),
-                            shape: MaterialStateProperty.all<
-                                RoundedRectangleBorder>(RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(18.0),
-                            ))),
-                        onPressed: (() => setState(() {
-                              timeClicked = !timeClicked;
-                              selectedTime = times[1];
-                            })),
-                      ),
-                    ),
-                    SizedBox(
-                      width: 5,
+                          child: Text(times[1],
+                              style: GoogleFonts.roboto(
+                                  textStyle: TextStyle(color: Colors.black))),
+                          style: ButtonStyle(
+                              textStyle: MaterialStateProperty.all<TextStyle>(
+                                  GoogleFonts.roboto(
+                                      textStyle: TextStyle(
+                                          color: Colors.black,
+                                          fontSize: 11.0))),
+                              elevation: MaterialStateProperty.all<double>(0),
+                              backgroundColor: MaterialStateProperty.all<Color>(
+                                  Color(0xff95D4D8)),
+                              maximumSize: MaterialStateProperty.all<Size>(Size(
+                                  MediaQuery.of(context).size.width * 0.2, 40)),
+                              shape: MaterialStateProperty.all<
+                                      RoundedRectangleBorder>(
+                                  RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(18.0),
+                              ))),
+                          onPressed: (() => setState(() {
+                                timeClicked = !timeClicked;
+                                selectedTime = times[0];
+                              }))),
                     ),
                     Visibility(
                       visible: timeClicked == false,
@@ -591,10 +614,13 @@ class _TableBasicsState extends State<UpdatedApptPage> {
                         style: ButtonStyle(
                             textStyle: MaterialStateProperty.all<TextStyle>(
                                 GoogleFonts.roboto(
-                                    textStyle: TextStyle(color: Colors.black))),
+                                    textStyle: TextStyle(
+                                        color: Colors.black, fontSize: 11.0))),
                             elevation: MaterialStateProperty.all<double>(0),
                             backgroundColor: MaterialStateProperty.all<Color>(
                                 Color(0xff808080)),
+                            maximumSize: MaterialStateProperty.all<Size>(Size(
+                                MediaQuery.of(context).size.width * 0.2, 40)),
                             shape: MaterialStateProperty.all<
                                 RoundedRectangleBorder>(RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(18.0),
@@ -606,10 +632,11 @@ class _TableBasicsState extends State<UpdatedApptPage> {
                 ),
                 Row(
                   children: [
-                    Visibility(
-                        visible: timeClicked == true,
-                        child: Padding(
-                          padding: EdgeInsets.fromLTRB(80, 50, 0, 0),
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(
+                          MediaQuery.of(context).size.width * 0.085, 20, 0, 0),
+                      child: Visibility(
+                          visible: timeClicked == true,
                           child: ElevatedButton(
                             child: Text('Confirm Appointment',
                                 style: GoogleFonts.roboto(
@@ -644,8 +671,9 @@ class _TableBasicsState extends State<UpdatedApptPage> {
                                   selectedTime = "",
                                   timeClicked = false,
                                 }),
-                          ),
-                        )),
+                            // ),
+                          )),
+                    )
                   ],
                 )
               ])),
@@ -653,9 +681,10 @@ class _TableBasicsState extends State<UpdatedApptPage> {
   }
 }
 
-void goToOnBoarding(context) => Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (_) => OnboardingPage()),
+void goToHomePage(context) => Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (_) => HomePage()),
     );
+
 void goToAppt(context) => Navigator.of(context).pushReplacement(
       PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) => ApptPage(),
