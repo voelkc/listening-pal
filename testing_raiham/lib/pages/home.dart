@@ -58,7 +58,13 @@ class HomePage extends StatelessWidget {
                 ),
               ],
             )),
-        body: Stack(
+
+
+        resizeToAvoidBottomInset : false,
+
+
+        body: SingleChildScrollView(
+          child: Stack(
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
@@ -320,21 +326,7 @@ class HomePage extends StatelessWidget {
                           // ListView(
                           //   padding: const EdgeInsets.all(8),
                           //   children: <Widget>[
-                          //     Container(
-                          //       height: 50,
-                          //       color: Colors.amber[600],
-                          //       child: const Center(child: Text('Entry A')),
-                          //     ),
-                          //     Container(
-                          //       height: 50,
-                          //       color: Colors.amber[500],
-                          //       child: const Center(child: Text('Entry B')),
-                          //     ),
-                          //     Container(
-                          //       height: 50,
-                          //       color: Colors.amber[100],
-                          //       child: const Center(child: Text('Entry C')),
-                          //     ),
+                          //
                           //   ],
                           // ),
                           // BEGINNING OF COOL STUFF
@@ -622,6 +614,7 @@ class HomePage extends StatelessWidget {
             CancelOverlayView(key: UniqueKey()),
             AppointmentDetailsOverlayView(key: UniqueKey()),
           ], //Stack children
+        ),
         ),
       );
 
