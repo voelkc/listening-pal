@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:testing_raiham/pages/appointments.dart';
 import 'package:testing_raiham/pages/home.dart';
 import 'package:onboarding/onboarding.dart';
 import 'pages/onboarding.dart';
@@ -36,6 +35,6 @@ class MyApp extends StatelessWidget {
                 color: Color(0xff41434D)), // clickable text!
           ),
         ),
-        home: HomePage(),
+        home: OnboardingPage(),
       );
 }
