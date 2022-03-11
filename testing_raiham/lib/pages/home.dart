@@ -285,16 +285,21 @@ class HomePage extends StatelessWidget {
 
 // Overlay Control stuff
 // Should add one for each type (Join call, End Call, Cancel Appointment)
-class JoinOverlayView extends StatelessWidget {
-  const JoinOverlayView({
-    required Key key,
-  }) : super(key: key);
+class JoinOverlayView extends StatefulWidget {
+  const JoinOverlayView({required Key key,}) : super(key: key);
+  @override
+  State<StatefulWidget> createState() => _JoinOverlayView();
+}
 
-  // @override
-  // State<StatefulWidget> createState() {
-  //   // TODO: implement createState
-  //   throw UnimplementedError();
-  // }
+
+class _JoinOverlayView extends State<JoinOverlayView>{
+  bool _checked = false;
+
+  void _checkBox() {
+    setState(() {
+     _checked = !_checked;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -454,12 +459,11 @@ class JoinOverlayView extends StatelessWidget {
                                     unselectedWidgetColor: Colors.white,
                                   ),
                                   child: Checkbox(
-                                      value: false,
+                                      value: _checked,
                                       activeColor: Colors.white,
-                                      checkColor: Colors.white,
+                                      checkColor: const Color(0xff41434D),
                                       onChanged: (bool? value) {
-                                        // setState(() {
-                                        //   isChecked = value!;)
+                                        _checkBox();
                                       }),
                                 ),
                                 Text(
@@ -490,11 +494,15 @@ class JoinOverlayView extends StatelessWidget {
                                             side: const BorderSide(
                                                 color: Color(0xff95D4D8))))),
                                 onPressed: () async => {
-                                  _hideJoinOverlay(),
-                                  _goToCall(context),
-                                  await Future.delayed(
-                                      const Duration(seconds: 1)),
-                                  _presentEndOverlay('text')
+                                 if(_checked){ // if user agreed
+                                   _hideJoinOverlay(),
+                                   _goToCall(context),
+                                   await Future.delayed(
+                                       const Duration(seconds: 1)),
+                                   _presentEndOverlay('text')
+                                 } else { // user did not agree
+
+                                 }
                                 },
                                 child: Padding(
                                   padding:
