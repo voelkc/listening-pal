@@ -251,7 +251,7 @@ class HomePage extends StatelessWidget {
                                                       fontWeight: FontWeight.bold),
                                                 ),
                                                 Text(
-                                                  'at 3:30 - 4:300pm PST',
+                                                  'at 3:30 - 4:30pm PST',
                                                   style: GoogleFonts.roboto(
                                                     textStyle:
                                                     Theme.of(context).textTheme.bodyText2,
