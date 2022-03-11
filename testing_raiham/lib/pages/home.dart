@@ -86,12 +86,27 @@ class HomePage extends StatelessWidget {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              Text(
-                                'You have X credits available',
-                                //style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
-                                style: GoogleFonts.roboto(
-                                    textStyle:
+                              RichText(
+                                text: TextSpan(children: [
+                                  TextSpan(
+                                      text: 'You have ',
+                                      style: GoogleFonts.roboto(
+                                        textStyle:
                                         Theme.of(context).textTheme.bodyText2),
+                                  ),
+                                  TextSpan(
+                                    text: '0',
+                                    style: GoogleFonts.roboto(
+                                        textStyle:
+                                        Theme.of(context).textTheme.bodyText2).copyWith(fontWeight: FontWeight.bold),
+                                  ),
+                                  TextSpan(
+                                    text: ' credits available',
+                                    style: GoogleFonts.roboto(
+                                        textStyle:
+                                        Theme.of(context).textTheme.bodyText2),
+                                  )
+                                ]),
                               ),
                               ElevatedButton(
                                 style: ButtonStyle(
@@ -481,7 +496,7 @@ class HomePage extends StatelessWidget {
                                                 ),
                                               ]),
                                           const SizedBox(
-                                            width: 110,
+                                            width: 119,
                                           ),
                                         ],)
                                   ),
