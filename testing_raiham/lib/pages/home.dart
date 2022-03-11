@@ -11,14 +11,25 @@ import 'package:url_launcher/url_launcher.dart';
 
 class HomePage extends StatelessWidget {
   final ApptPage appt = ApptPage();
-
+  DateTime _selectedDay = DateTime.utc(2022, 3, 10);
+  List<DateTime> apptDays = [
+    DateTime.utc(2022, 3, 3),
+    DateTime.utc(2022, 3, 10),
+    DateTime.utc(2022, 3, 21),
+    DateTime.utc(2022, 3, 25)
+  ];
   Map<DateTime, List<Event>> selectedEvents = {
-    DateTime.utc(2022, 3, 3): [Event('3:30-4:00 PM', "Call with Jane")],
-    DateTime.utc(2022, 3, 8): [Event('4:00-4:30 PM', "Call with Lilly")],
-    DateTime.utc(2022, 3, 16): [Event('4:00-4:30 PM', "Call with Sam")],
-    DateTime.utc(2022, 3, 21): [Event('1:30-2:00 PM', "Call with Toby")],
-    DateTime.utc(2022, 3, 25): [Event('9:00-9:30 PM', "Call with Jane")],
+    DateTime.utc(2022, 3, 3): [Event('3:30-4 PM', "Call with Jane")],
+    DateTime.utc(2022, 3, 10): [Event('3:30-4 PM', "Call with Jane")],
+    DateTime.utc(2022, 3, 21): [Event('1:30-2 PM', "Call with Toby")],
+    DateTime.utc(2022, 3, 25): [Event('9-9:30 PM', "Call with Jane")],
   };
+  String selectedSession = '';
+
+  List<Event> _getEventsfromDay(DateTime date) {
+    return selectedEvents[date] ?? [];
+  }
+
   @override
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(
@@ -140,36 +151,39 @@ class HomePage extends StatelessWidget {
                                 textStyle:
                                     Theme.of(context).textTheme.headline1),
                           ),
-                          Text(
-                            'No appointments scheduled today',
-                            //style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
-                            style: GoogleFonts.roboto(
-                                textStyle:
-                                    Theme.of(context).textTheme.bodyText2),
-                          ),
-                          ElevatedButton(
-                            //TODO: REMOVE FOR TESTING ONLY, should replace with stateful widget
-                            style: ButtonStyle(
-                                elevation: MaterialStateProperty.all<double>(0),
-                                backgroundColor:
-                                    MaterialStateProperty.all<Color>(
-                                        Color.fromRGBO(149, 212, 216, 1)),
-                                shape: MaterialStateProperty.all<
-                                        RoundedRectangleBorder>(
-                                    RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(18.0),
-                                        side: BorderSide(
-                                            color: Color(0xff95D4D8))))),
-                            onPressed: () => _presentJoinOverlay(
-                                'Jane|March 21, 2022|3:30 - 4:00pm'),
-                            child: Text(
-                              'Call Placeholder',
-                              style: GoogleFonts.roboto(
-                                  textStyle:
-                                      Theme.of(context).textTheme.button),
+                          // ..._getEventsfromDay(_selectedDay).map(
+                          //   (Event event) =>
+
+                          ButtonTheme(
+                            child: TextButton(
+                              //TODO: REMOVE FOR TESTING ONLY, should replace with stateful widget
+                              style: ButtonStyle(
+                                  padding:
+                                      MaterialStateProperty.all<EdgeInsets>(
+                                          EdgeInsets.all(20)),
+                                  elevation:
+                                      MaterialStateProperty.all<double>(2.5),
+                                  backgroundColor:
+                                      MaterialStateProperty.all<Color>(
+                                          Colors.white),
+                                  shape: MaterialStateProperty.all<
+                                          RoundedRectangleBorder>(
+                                      RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(10.0),
+                                          side: BorderSide(
+                                              width: 2.0,
+                                              color: Color(0xff95D4D8))))),
+                              onPressed: () => _presentJoinOverlay(
+                                  'Jane|March 10, 2022|3:30 - 4:00pm'),
+                              child: Text(
+                                'Join Call with Jane at 3:30 - 4 PM',
+                                style: GoogleFonts.roboto(
+                                    textStyle: TextStyle(
+                                        fontSize: 22, color: Colors.black)),
+                              ),
                             ),
-                          ),
+                          )
                         ],
                       ),
                     ],
@@ -217,27 +231,9 @@ class HomePage extends StatelessWidget {
                       ),
                     ],
                   ),
-                  // selectedEvents.forEach(
-                  //   (day, events) =>(
-                  //     events.map(Event event)=>(
-                  //       GestureDetector(
-                  //           onTap: () {
-                  //             showDialog(
-                  //               context: context,
-                  //               builder: (BuildContext context) =>
-                  //                   buildEditCallPopup(context),
-                  //             );
-                  //           },
-                  //           child: Card(
-                  //             shape: RoundedRectangleBorder(
-                  //                 side: BorderSide(color: Colors.grey),
-                  //                 borderRadius: BorderRadius.circular(15.0)),
-                  //             child: ListTile(
-                  //               title: Text(event.title + ' at ' + event.sessionTime),
-                  //             ),
-                  //           ))
-                  //     ))
-                  // ),
+                  SizedBox(
+                    height: 30,
+                  ),
                   ElevatedButton(
                     style: ButtonStyle(
                         elevation: MaterialStateProperty.all<double>(0),

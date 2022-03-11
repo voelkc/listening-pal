@@ -31,7 +31,6 @@ class _TableBasicsState extends State<UpdatedApptPage> {
     DateTime.utc(2022, 3, 3): [Event('3:30-4 PM', "Call with Jane")],
     DateTime.utc(2022, 3, 8): [Event('4-4:30 PM', "Call with Lilly")],
     DateTime.utc(2022, 3, 11): [Event('3:30-4 PM', 'Call with Sam')],
-    DateTime.utc(2022, 3, 16): [Event('4-4:30 PM', "Call with Sam")],
     DateTime.utc(2022, 3, 21): [Event('1:30-2 PM', "Call with Toby")],
     DateTime.utc(2022, 3, 25): [Event('9-9:30 PM', "Call with Jane")],
   };
