@@ -54,100 +54,121 @@ class _TableBasicsState extends State<ApptPage> {
   Widget build(BuildContext context) => Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        automaticallyImplyLeading: false,
-
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        actions: <Widget>[
-          // Row(
-          //   mainAxisAlignment: MainAxisAlignment.start,
-          //   children: [
-          IconButton(
-            onPressed: () => goToHomePage(context),
-            icon: const Icon(
-              Icons.arrow_back_ios_new_rounded,
-              color: Color(0xff41434D),
-              size: 24.0,
-              semanticLabel: 'Text to announce in accessibility modes',
-            ),
-          ),
-          TextButton(
-            onPressed: () => goToHomePage(context),
-            child: Text(
-              'Back',
-              style: GoogleFonts.roboto(
-                      textStyle: Theme.of(context).textTheme.bodyText1)
-                  .copyWith(decoration: TextDecoration.none),
-            ),
-          ),
-          SizedBox(width: MediaQuery.of(context).size.width * 0.07),
-          TextButton(
-            onPressed: () => home.goToResources(context),
-            child: Text(
-              'Resources',
-              textAlign: TextAlign.right,
-              style: GoogleFonts.roboto(
-                      textStyle: Theme.of(context).textTheme.bodyText1)
-                  .copyWith(decoration: TextDecoration.none),
-            ),
-          ),
-          TextButton(
-            onPressed: () => launchURL('https://listeningpal.com/'),
-            child: Text(
-              'Account',
-              style: GoogleFonts.roboto(
-                      textStyle: Theme.of(context).textTheme.bodyText1)
-                  .copyWith(decoration: TextDecoration.none),
-            ),
-          ),
-        ],
-        //   )
-        // ],
-      ),
+          automaticallyImplyLeading: false,
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              IconButton(
+                onPressed: () => goToHomePage(context),
+                icon: const Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  color: Color(0xff41434D),
+                  size: 24.0,
+                  semanticLabel: 'Text to announce in accessibility modes',
+                ),
+              ),
+              TextButton(
+                onPressed: () => goToHomePage(context),
+                child: Text(
+                  'Back',
+                  style: GoogleFonts.roboto(
+                          textStyle: Theme.of(context).textTheme.bodyText1)
+                      .copyWith(decoration: TextDecoration.none),
+                ),
+              ),
+              // SizedBox(width: MediaQuery.of(context).size.width * 0.07),
+              const SizedBox(width: 60),
+              TextButton(
+                onPressed: () => home.goToResources(context),
+                child: Text(
+                  'Resources',
+                  textAlign: TextAlign.right,
+                  style: GoogleFonts.roboto(
+                          textStyle: Theme.of(context).textTheme.bodyText1)
+                      .copyWith(decoration: TextDecoration.none),
+                ),
+              ),
+              TextButton(
+                onPressed: () => launchURL('https://listeningpal.com/'),
+                child: Text(
+                  'Account',
+                  style: GoogleFonts.roboto(
+                          textStyle: Theme.of(context).textTheme.bodyText1)
+                      .copyWith(decoration: TextDecoration.none),
+                ),
+              ),
+            ],
+          )),
       body: Center(
           child: Padding(
         padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                crossAxisAlignment: CrossAxisAlignment.end,
+            Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Column(
+                  Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           'Hey, pal!',
+                          //style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
                           style: GoogleFonts.dongle(
                               textStyle: Theme.of(context).textTheme.headline1),
                         ),
-                        Text(
-                          'You have 1 credit  available',
-                          style: GoogleFonts.roboto(
-                              textStyle: Theme.of(context).textTheme.bodyText2),
+                      ]),
+                  Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        RichText(
+                          text: TextSpan(children: [
+                            TextSpan(
+                              text: 'You have ',
+                              style: GoogleFonts.roboto(
+                                  textStyle:
+                                      Theme.of(context).textTheme.bodyText2),
+                            ),
+                            TextSpan(
+                              text: '1',
+                              style: GoogleFonts.roboto(
+                                      textStyle:
+                                          Theme.of(context).textTheme.bodyText2)
+                                  .copyWith(fontWeight: FontWeight.bold),
+                            ),
+                            TextSpan(
+                              text: ' credit available',
+                              style: GoogleFonts.roboto(
+                                  textStyle:
+                                      Theme.of(context).textTheme.bodyText2),
+                            )
+                          ]),
+                        ),
+                        ElevatedButton(
+                          style: ButtonStyle(
+                              elevation: MaterialStateProperty.all<double>(0),
+                              backgroundColor: MaterialStateProperty.all<Color>(
+                                  const Color(0xffF9F9F9)),
+                              shape: MaterialStateProperty.all<
+                                      RoundedRectangleBorder>(
+                                  RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(18.0),
+                                      side: const BorderSide(
+                                          width: 2.5,
+                                          color: Color(0xff95D4D8))))),
+                          onPressed: () =>
+                              launchURL('https://listeningpal.com/'),
+                          child: Text(
+                            'Get Credits',
+                            style: GoogleFonts.roboto(
+                                textStyle: Theme.of(context).textTheme.button),
+                          ),
                         ),
                       ]),
-                  ElevatedButton(
-                    style: ButtonStyle(
-                        elevation: MaterialStateProperty.all<double>(0),
-                        backgroundColor:
-                            MaterialStateProperty.all<Color>(Color(0xffF9F9F9)),
-                        shape:
-                            MaterialStateProperty.all<RoundedRectangleBorder>(
-                                RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(18.0),
-                                    side: BorderSide(
-                                        width: 2.5,
-                                        color: Color(0xff95D4D8))))),
-                    onPressed: () => launchURL('https://listeningpal.com/'),
-                    child: Text(
-                      'Purchase Credits',
-                      style: GoogleFonts.roboto(
-                          textStyle: TextStyle(
-                              fontSize: 14.0, color: Color(0xff41434D))),
-                    ),
-                  ),
                 ]),
             Row(
                 mainAxisAlignment: MainAxisAlignment.start,
@@ -680,4 +701,5 @@ void goToUpdatedAppt(context) => Navigator.of(context).pushReplacement(
               UpdatedApptPage(),
           transitionDuration: Duration.zero,
           reverseTransitionDuration: Duration.zero),
+      // MaterialPageRoute(builder: (_) => UpdatedApptPage()),
     );

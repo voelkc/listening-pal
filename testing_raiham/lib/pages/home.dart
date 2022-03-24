@@ -34,6 +34,7 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(
+            automaticallyImplyLeading: false,
             backgroundColor: Theme.of(context).scaffoldBackgroundColor,
             title: Row(
               mainAxisAlignment: MainAxisAlignment.end,
@@ -253,7 +254,7 @@ class HomePage extends StatelessWidget {
                                                   CrossAxisAlignment.start,
                                               children: [
                                                 Text(
-                                                  'Call With Jane',
+                                                  'Call with Jane',
                                                   style: GoogleFonts.roboto(
                                                     textStyle: Theme.of(context)
                                                         .textTheme
@@ -405,7 +406,7 @@ class HomePage extends StatelessWidget {
                                                   CrossAxisAlignment.start,
                                               children: [
                                                 Text(
-                                                  'Call With Jane',
+                                                  'Call with Jane',
                                                   style: GoogleFonts.roboto(
                                                     textStyle: Theme.of(context)
                                                         .textTheme
@@ -501,7 +502,7 @@ class HomePage extends StatelessWidget {
                                                   CrossAxisAlignment.start,
                                               children: [
                                                 Text(
-                                                  'Call With Toby',
+                                                  'Call with Toby',
                                                   style: GoogleFonts.roboto(
                                                     textStyle: Theme.of(context)
                                                         .textTheme
@@ -521,7 +522,7 @@ class HomePage extends StatelessWidget {
                                                 ),
                                               ]),
                                           const SizedBox(
-                                            width: 119,
+                                            width: 110,
                                           ),
                                         ],
                                       )),
@@ -597,7 +598,7 @@ class HomePage extends StatelessWidget {
                                                   CrossAxisAlignment.start,
                                               children: [
                                                 Text(
-                                                  'Call With Jane',
+                                                  'Call with Jane',
                                                   style: GoogleFonts.roboto(
                                                     textStyle: Theme.of(context)
                                                         .textTheme

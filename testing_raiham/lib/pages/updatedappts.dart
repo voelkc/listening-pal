@@ -108,45 +108,69 @@ class _TableBasicsState extends State<UpdatedApptPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                crossAxisAlignment: CrossAxisAlignment.end,
+            Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Column(
+                  Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           'Hey, pal!',
+                          //style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
                           style: GoogleFonts.dongle(
                               textStyle: Theme.of(context).textTheme.headline1),
                         ),
-                        Text(
-                          'You have 0 credits available',
-                          style: GoogleFonts.roboto(
-                              textStyle: Theme.of(context).textTheme.bodyText2),
+                      ]),
+                  Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        RichText(
+                          text: TextSpan(children: [
+                            TextSpan(
+                              text: 'You have ',
+                              style: GoogleFonts.roboto(
+                                  textStyle:
+                                      Theme.of(context).textTheme.bodyText2),
+                            ),
+                            TextSpan(
+                              text: '0',
+                              style: GoogleFonts.roboto(
+                                      textStyle:
+                                          Theme.of(context).textTheme.bodyText2)
+                                  .copyWith(fontWeight: FontWeight.bold),
+                            ),
+                            TextSpan(
+                              text: ' credits available',
+                              style: GoogleFonts.roboto(
+                                  textStyle:
+                                      Theme.of(context).textTheme.bodyText2),
+                            )
+                          ]),
+                        ),
+                        ElevatedButton(
+                          style: ButtonStyle(
+                              elevation: MaterialStateProperty.all<double>(0),
+                              backgroundColor: MaterialStateProperty.all<Color>(
+                                  const Color(0xffF9F9F9)),
+                              shape: MaterialStateProperty.all<
+                                      RoundedRectangleBorder>(
+                                  RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(18.0),
+                                      side: const BorderSide(
+                                          width: 2.5,
+                                          color: Color(0xff95D4D8))))),
+                          onPressed: () =>
+                              launchURL('https://listeningpal.com/'),
+                          child: Text(
+                            'Get Credits',
+                            style: GoogleFonts.roboto(
+                                textStyle: Theme.of(context).textTheme.button),
+                          ),
                         ),
                       ]),
-                  ElevatedButton(
-                    style: ButtonStyle(
-                        elevation: MaterialStateProperty.all<double>(0),
-                        backgroundColor:
-                            MaterialStateProperty.all<Color>(Color(0xffF9F9F9)),
-                        shape:
-                            MaterialStateProperty.all<RoundedRectangleBorder>(
-                                RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(18.0),
-                                    side: BorderSide(
-                                        width: 2.5,
-                                        color: Color(0xff95D4D8))))),
-                    onPressed: () => launchURL('https://listeningpal.com/'),
-                    child: Text(
-                      'Purchase Credits',
-                      style: GoogleFonts.roboto(
-                          textStyle: TextStyle(
-                              fontSize: 14.0, color: Color(0xff41434D))),
-                    ),
-                  ),
                 ]),
             Row(
                 mainAxisAlignment: MainAxisAlignment.start,
@@ -693,4 +717,5 @@ void goToAppt(context) => Navigator.of(context).pushReplacement(
           pageBuilder: (context, animation, secondaryAnimation) => ApptPage(),
           transitionDuration: Duration.zero,
           reverseTransitionDuration: Duration.zero),
+      // MaterialPageRoute(builder: (_) => ApptPage()),
     );
