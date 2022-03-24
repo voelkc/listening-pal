@@ -54,50 +54,55 @@ class _TableBasicsState extends State<ApptPage> {
   Widget build(BuildContext context) => Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
-          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-          title: Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              IconButton(
-                onPressed: () => goToHomePage(context),
-                icon: const Icon(
-                  Icons.arrow_back_ios_new_rounded,
-                  color: Color(0xff41434D),
-                  size: 24.0,
-                  semanticLabel: 'Text to announce in accessibility modes',
-                ),
-              ),
-              TextButton(
-                onPressed: () => goToHomePage(context),
-                child: Text(
-                  'Back',
-                  style: GoogleFonts.roboto(
-                          textStyle: Theme.of(context).textTheme.bodyText1)
-                      .copyWith(decoration: TextDecoration.none),
-                ),
-              ),
-              SizedBox(width: MediaQuery.of(context).size.width * 0.07),
-              TextButton(
-                onPressed: () => home.goToResources(context),
-                child: Text(
-                  'Resources',
-                  textAlign: TextAlign.right,
-                  style: GoogleFonts.roboto(
-                          textStyle: Theme.of(context).textTheme.bodyText1)
-                      .copyWith(decoration: TextDecoration.none),
-                ),
-              ),
-              TextButton(
-                onPressed: () => launchURL('https://listeningpal.com/'),
-                child: Text(
-                  'Account',
-                  style: GoogleFonts.roboto(
-                          textStyle: Theme.of(context).textTheme.bodyText1)
-                      .copyWith(decoration: TextDecoration.none),
-                ),
-              ),
-            ],
-          )),
+        automaticallyImplyLeading: false,
+
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        actions: <Widget>[
+          // Row(
+          //   mainAxisAlignment: MainAxisAlignment.start,
+          //   children: [
+          IconButton(
+            onPressed: () => goToHomePage(context),
+            icon: const Icon(
+              Icons.arrow_back_ios_new_rounded,
+              color: Color(0xff41434D),
+              size: 24.0,
+              semanticLabel: 'Text to announce in accessibility modes',
+            ),
+          ),
+          TextButton(
+            onPressed: () => goToHomePage(context),
+            child: Text(
+              'Back',
+              style: GoogleFonts.roboto(
+                      textStyle: Theme.of(context).textTheme.bodyText1)
+                  .copyWith(decoration: TextDecoration.none),
+            ),
+          ),
+          SizedBox(width: MediaQuery.of(context).size.width * 0.07),
+          TextButton(
+            onPressed: () => home.goToResources(context),
+            child: Text(
+              'Resources',
+              textAlign: TextAlign.right,
+              style: GoogleFonts.roboto(
+                      textStyle: Theme.of(context).textTheme.bodyText1)
+                  .copyWith(decoration: TextDecoration.none),
+            ),
+          ),
+          TextButton(
+            onPressed: () => launchURL('https://listeningpal.com/'),
+            child: Text(
+              'Account',
+              style: GoogleFonts.roboto(
+                      textStyle: Theme.of(context).textTheme.bodyText1)
+                  .copyWith(decoration: TextDecoration.none),
+            ),
+          ),
+        ],
+        //   )
+        // ],
+      ),
       body: Center(
           child: Padding(
         padding: EdgeInsets.fromLTRB(10, 0, 10, 0),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import './onboarding.dart';
-import './appointments.dart';
+import './updatedappts.dart';
 import './home.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
@@ -12,16 +12,16 @@ class Event {
   final String title;
 }
 
-class UpdatedApptPage extends StatefulWidget {
+class ApptPage extends StatefulWidget {
   @override
   _TableBasicsState createState() => _TableBasicsState();
 }
 
-class _TableBasicsState extends State<UpdatedApptPage> {
+class _TableBasicsState extends State<ApptPage> {
   CalendarFormat _calendarFormat = CalendarFormat.month;
   DateTime todayDate = DateTime.now();
-  DateTime _focusedDay = DateTime.utc(2022, 3, 11);
-  DateTime _selectedDay = DateTime.utc(2022, 3, 11);
+  DateTime _focusedDay = DateTime.now();
+  DateTime _selectedDay = DateTime.now();
   final HomePage home = HomePage();
   bool showWidget = false;
   bool timeClicked = false;
@@ -29,11 +29,10 @@ class _TableBasicsState extends State<UpdatedApptPage> {
   String selectedTime = "";
 
   Map<DateTime, List<Event>> selectedEvents = {
-    DateTime.utc(2022, 3, 3): [Event('3:30-4 PM', "Call with Jane")],
-    DateTime.utc(2022, 3, 10): [Event('4-4:30 PM', "Call with Lilly")],
-    DateTime.utc(2022, 3, 11): [Event('3:30-4 PM', 'Call with Sam')],
-    DateTime.utc(2022, 3, 21): [Event('1:30-2 PM', "Call with Toby")],
-    DateTime.utc(2022, 3, 25): [Event('9-9:30 PM', "Call with Jane")],
+    DateTime.utc(2022, 3, 3): [Event('3:30-4 PM', "Call with Pal")],
+    DateTime.utc(2022, 3, 10): [Event('4-4:30 PM', "Call with Pal")],
+    DateTime.utc(2022, 3, 21): [Event('1:30-2 PM', "Call with Pal")],
+    DateTime.utc(2022, 3, 25): [Event('9-9:30 PM', "Call with Pal")],
   };
 
   String selectedSession = '';
@@ -55,53 +54,55 @@ class _TableBasicsState extends State<UpdatedApptPage> {
   Widget build(BuildContext context) => Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
-          automaticallyImplyLeading: false,
-          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-          actions: <Widget>[
-            // (
-            // mainAxisAlignment: MainAxisAlignment.start,
-            // children: [
-            IconButton(
-              onPressed: () => goToHomePage(context),
-              icon: const Icon(
-                Icons.arrow_back_ios_new_rounded,
-                color: Color(0xff41434D),
-                size: 24.0,
-                semanticLabel: 'Arrow button to go back to home',
-              ),
+        automaticallyImplyLeading: false,
+
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        actions: <Widget>[
+          // Row(
+          //   mainAxisAlignment: MainAxisAlignment.start,
+          //   children: [
+          IconButton(
+            onPressed: () => goToHomePage(context),
+            icon: const Icon(
+              Icons.arrow_back_ios_new_rounded,
+              color: Color(0xff41434D),
+              size: 24.0,
+              semanticLabel: 'Back arrow to return to Home Page',
             ),
-            TextButton(
-              onPressed: () => goToHomePage(context),
-              child: Text(
-                'Back',
-                style: GoogleFonts.roboto(
-                        textStyle: Theme.of(context).textTheme.bodyText1)
-                    .copyWith(decoration: TextDecoration.none),
-              ),
+          ),
+          TextButton(
+            onPressed: () => goToHomePage(context),
+            child: Text(
+              'Back',
+              style: GoogleFonts.roboto(
+                      textStyle: Theme.of(context).textTheme.bodyText1)
+                  .copyWith(decoration: TextDecoration.none),
             ),
-            SizedBox(width: MediaQuery.of(context).size.width * 0.07),
-            TextButton(
-              onPressed: () => home.goToResources(context),
-              child: Text(
-                'Resources',
-                textAlign: TextAlign.right,
-                style: GoogleFonts.roboto(
-                        textStyle: Theme.of(context).textTheme.bodyText1)
-                    .copyWith(decoration: TextDecoration.none),
-              ),
+          ),
+          SizedBox(width: MediaQuery.of(context).size.width * 0.07),
+          TextButton(
+            onPressed: () => home.goToResources(context),
+            child: Text(
+              'Resources',
+              textAlign: TextAlign.right,
+              style: GoogleFonts.roboto(
+                      textStyle: Theme.of(context).textTheme.bodyText1)
+                  .copyWith(decoration: TextDecoration.none),
             ),
-            TextButton(
-              onPressed: () => launchURL('https://listeningpal.com/'),
-              child: Text(
-                'Account',
-                style: GoogleFonts.roboto(
-                        textStyle: Theme.of(context).textTheme.bodyText1)
-                    .copyWith(decoration: TextDecoration.none),
-              ),
+          ),
+          TextButton(
+            onPressed: () => launchURL('https://listeningpal.com/'),
+            child: Text(
+              'Account',
+              style: GoogleFonts.roboto(
+                      textStyle: Theme.of(context).textTheme.bodyText1)
+                  .copyWith(decoration: TextDecoration.none),
             ),
-            // ],
-            // )
-          ]),
+          ),
+        ],
+        //   )
+        // ],
+      ),
       body: Center(
           child: Padding(
         padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
@@ -117,36 +118,36 @@ class _TableBasicsState extends State<UpdatedApptPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Hey, pal!',
+                          'Hey, Listener!',
                           style: GoogleFonts.dongle(
                               textStyle: Theme.of(context).textTheme.headline1),
                         ),
-                        Text(
-                          'You have 0 credits available',
-                          style: GoogleFonts.roboto(
-                              textStyle: Theme.of(context).textTheme.bodyText2),
-                        ),
+                        // Text(
+                        //   'You have 1 credit  available',
+                        //   style: GoogleFonts.roboto(
+                        //       textStyle: Theme.of(context).textTheme.bodyText2),
+                        // ),
                       ]),
-                  ElevatedButton(
-                    style: ButtonStyle(
-                        elevation: MaterialStateProperty.all<double>(0),
-                        backgroundColor:
-                            MaterialStateProperty.all<Color>(Color(0xffF9F9F9)),
-                        shape:
-                            MaterialStateProperty.all<RoundedRectangleBorder>(
-                                RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(18.0),
-                                    side: BorderSide(
-                                        width: 2.5,
-                                        color: Color(0xff95D4D8))))),
-                    onPressed: () => launchURL('https://listeningpal.com/'),
-                    child: Text(
-                      'Purchase Credits',
-                      style: GoogleFonts.roboto(
-                          textStyle: TextStyle(
-                              fontSize: 14.0, color: Color(0xff41434D))),
-                    ),
-                  ),
+                  // ElevatedButton(
+                  //   style: ButtonStyle(
+                  //       elevation: MaterialStateProperty.all<double>(0),
+                  //       backgroundColor:
+                  //           MaterialStateProperty.all<Color>(Color(0xffF9F9F9)),
+                  //       shape:
+                  //           MaterialStateProperty.all<RoundedRectangleBorder>(
+                  //               RoundedRectangleBorder(
+                  //                   borderRadius: BorderRadius.circular(18.0),
+                  //                   side: BorderSide(
+                  //                       width: 2.5,
+                  //                       color: Color(0xff95D4D8))))),
+                  //   onPressed: () => launchURL('https://listeningpal.com/'),
+                  //   child: Text(
+                  //     'Purchase Credits',
+                  //     style: GoogleFonts.roboto(
+                  //         textStyle: TextStyle(
+                  //             fontSize: 14.0, color: Color(0xff41434D))),
+                  //   ),
+                  // ),
                 ]),
             Row(
                 mainAxisAlignment: MainAxisAlignment.start,
@@ -260,19 +261,14 @@ class _TableBasicsState extends State<UpdatedApptPage> {
                   Text(
                     'Cancellation Confirmed',
                     style: GoogleFonts.roboto(
-                        textStyle:
-                            TextStyle(color: Colors.white, fontSize: 20)),
+                        textStyle: TextStyle(color: Colors.white)),
                   ),
                   GestureDetector(
                     onTap: () {
                       Navigator.of(context).pop();
                     },
                     child: Container(
-                        padding: EdgeInsets.fromLTRB(
-                            MediaQuery.of(context).size.width * 0.04,
-                            0,
-                            0,
-                            MediaQuery.of(context).size.height * 0.1),
+                        padding: EdgeInsets.fromLTRB(200, 0, 0, 50),
                         child: Icon(
                           Icons.cancel,
                           color: Colors.white,
@@ -290,8 +286,7 @@ class _TableBasicsState extends State<UpdatedApptPage> {
                       Navigator.of(context).pop();
                     },
                     child: Container(
-                        padding: EdgeInsets.fromLTRB(
-                            MediaQuery.of(context).size.width * 0.35, 0, 0, 50),
+                        padding: EdgeInsets.fromLTRB(200, 0, 0, 50),
                         child: Icon(
                           Icons.cancel,
                           color: Colors.white,
@@ -312,13 +307,13 @@ class _TableBasicsState extends State<UpdatedApptPage> {
                                 Text('Your appointment has been cancelled.',
                                     style: GoogleFonts.roboto(
                                       textStyle: TextStyle(
-                                          fontSize: 12.0, color: Colors.white),
+                                          fontSize: 16.0, color: Colors.white),
                                     )),
                                 Text(
                                     '1 credit has been refunded to your account.',
                                     style: GoogleFonts.roboto(
                                       textStyle: TextStyle(
-                                          fontSize: 12.0, color: Colors.white),
+                                          fontSize: 16.0, color: Colors.white),
                                     )),
                               ])
                         : Column(
@@ -369,12 +364,8 @@ class _TableBasicsState extends State<UpdatedApptPage> {
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Padding(
-                                      padding: EdgeInsets.fromLTRB(
-                                          MediaQuery.of(context).size.width *
-                                              0.085,
-                                          20,
-                                          0,
-                                          0),
+                                      padding:
+                                          EdgeInsets.fromLTRB(60, 20, 0, 0),
                                       child: ElevatedButton(
                                         child: Text('Cancel Appointment',
                                             style: GoogleFonts.roboto(
@@ -401,19 +392,14 @@ class _TableBasicsState extends State<UpdatedApptPage> {
                                                   cancelClicked =
                                                       !cancelClicked,
                                                 },
-                                              ),
-                                              goToAppt(context)
+                                              )
                                             }),
                                       ),
                                     ),
                                   ],
                                 ),
                                 Padding(
-                                  padding: EdgeInsets.fromLTRB(
-                                      MediaQuery.of(context).size.width * 0.2,
-                                      20,
-                                      0,
-                                      0),
+                                  padding: EdgeInsets.fromLTRB(100, 20, 0, 0),
                                   child: ElevatedButton(
                                     child: Text('Go Back',
                                         style: GoogleFonts.roboto(
@@ -673,6 +659,7 @@ class _TableBasicsState extends State<UpdatedApptPage> {
                                   Navigator.pop(context),
                                   selectedTime = "",
                                   timeClicked = false,
+                                  goToUpdatedAppt(context)
                                 }),
                             // ),
                           )),
@@ -687,10 +674,10 @@ class _TableBasicsState extends State<UpdatedApptPage> {
 void goToHomePage(context) => Navigator.of(context).pushReplacement(
       MaterialPageRoute(builder: (_) => HomePage()),
     );
-
-void goToAppt(context) => Navigator.of(context).pushReplacement(
+void goToUpdatedAppt(context) => Navigator.of(context).pushReplacement(
       PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) => ApptPage(),
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              UpdatedApptPage(),
           transitionDuration: Duration.zero,
           reverseTransitionDuration: Duration.zero),
     );
