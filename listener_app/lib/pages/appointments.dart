@@ -103,7 +103,9 @@ class _TableBasicsState extends State<ApptPage> {
         //   )
         // ],
       ),
-      body: Center(
+      body:
+
+      Center(
           child: Padding(
         padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
         child: Column(
@@ -165,7 +167,24 @@ class _TableBasicsState extends State<ApptPage> {
               child: SizedBox(
                 height: 300.0,
                 width: 300.0,
-                child: TableCalendar(
+                child:
+                    // use to pull from aws
+  //                   StreamBuilder(
+  //               stream: eventDBS.streamQueryList(args: [
+  //             QueryArgsV2(
+  //             "user_id",
+  //               isEqualTo: context.read(userRepoProvider).user.id,
+  //             ),
+  //               ]),
+  //                     builder: (BuildContext context, AsyncSnapshot snapshot) {
+  // if (snapshot.hasData) {
+  // final events = snapshot.data;
+  // _groupEvents(events);
+  // DateTime selectedDate = _selectedDay;
+  // final _selectedEvents = _groupedEvents[selectedDate] ?? [];
+  // return ...
+  //                     ,)
+                TableCalendar(
                   firstDay: DateTime(2022),
                   lastDay: DateTime(2023),
                   focusedDay: DateTime.utc(
@@ -309,12 +328,12 @@ class _TableBasicsState extends State<ApptPage> {
                                       textStyle: TextStyle(
                                           fontSize: 16.0, color: Colors.white),
                                     )),
-                                Text(
-                                    '1 credit has been refunded to your account.',
-                                    style: GoogleFonts.roboto(
-                                      textStyle: TextStyle(
-                                          fontSize: 16.0, color: Colors.white),
-                                    )),
+                                // Text(
+                                //     '1 credit has been refunded to your account.',
+                                //     style: GoogleFonts.roboto(
+                                //       textStyle: TextStyle(
+                                //           fontSize: 16.0, color: Colors.white),
+                                //     )),
                               ])
                         : Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -491,7 +510,7 @@ class _TableBasicsState extends State<ApptPage> {
                                 Row(
                                   children: [
                                     Text(
-                                        'Use 1 credit to book the following appointment:',
+                                        'Book the following appointment:',
                                         style: GoogleFonts.roboto(
                                           textStyle: TextStyle(
                                               fontSize: 12.0,
@@ -646,14 +665,14 @@ class _TableBasicsState extends State<ApptPage> {
                                     {
                                       selectedEvents[_selectedDay as DateTime]
                                           ?.add(
-                                        Event(selectedTime, 'Session with Sam'),
+                                        Event(selectedTime, 'Session with Pal'),
                                       )
                                     }
                                   else
                                     {
                                       selectedEvents[_selectedDay as DateTime] =
                                           [
-                                        Event(selectedTime, 'Session with Sam')
+                                        Event(selectedTime, 'Session with Pal')
                                       ]
                                     },
                                   Navigator.pop(context),
