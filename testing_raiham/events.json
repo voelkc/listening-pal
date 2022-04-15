@@ -1,0 +1,35 @@
+[
+    {
+    "Date": "2022,3,3",
+    "Events": [
+        {"Time":"3:30 - 4 pm", 
+            "Title": "Call with Jane"},
+            {"Time": "4:30 - 5pm",
+            "Title": "Call with Sam"}
+    ]
+},
+{
+    "Date": "2022,3,10",
+    "Events": [
+        {"Time":"4 - 4:30 pm", 
+            "Title": "Call with Jane"},
+            {"Time": "4:30 - 5pm",
+            "Title": "Call with Sam"}
+    ]
+    
+}, 
+{
+    "Date": "2022,3,21",
+    "Events": [
+        {"Time":"1:30 - 2 pm", 
+            "Title": "Call with Lilly"}
+    ]
+},
+{
+    "Date": "2022,3,25",
+    "Events": [
+        {"Time":"9 - 9:30 pm", 
+            "Title": "Call with Toby"}
+    ]
+}
+]

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import './onboarding.dart';
+import 'dart:async';
+import 'dart:convert';
 import './updatedappts.dart';
 import './home.dart';
 import 'package:table_calendar/table_calendar.dart';
@@ -27,18 +29,23 @@ class _TableBasicsState extends State<ApptPage> {
   bool timeClicked = false;
   bool cancelClicked = false;
   String selectedTime = "";
+  List _items = [];
 
-  Map<DateTime, List<Event>> selectedEvents = {
-    DateTime.utc(2022, 3, 3): [Event('3:30-4 PM', "Call with Jane")],
-    DateTime.utc(2022, 3, 10): [Event('4-4:30 PM', "Call with Lilly")],
-    DateTime.utc(2022, 3, 21): [Event('1:30-2 PM', "Call with Toby")],
-    DateTime.utc(2022, 3, 25): [Event('9-9:30 PM', "Call with Jane")],
-  };
+  Map<DateTime, List<Event>> selectedEvents = {};
 
   String selectedSession = '';
   @override
   void initState() {
     super.initState();
+  }
+
+  Future<void> readJson() async {
+    final String response =
+        await DefaultAssetBundle.of(context).loadString('events.json');
+    final data = await json.decode(response) as Map<DateTime, List<Event>>;
+    setState(() {
+      selectedEvents = data;
+    });
   }
 
   List<Event> _getEventsfromDay(DateTime date) {
@@ -182,48 +189,52 @@ class _TableBasicsState extends State<ApptPage> {
                                 fontSize: 24.0, color: Color(0xff41434D)),
                           ))),
                 ]),
-            Expanded(
-              child: SizedBox(
-                height: 300.0,
-                width: 300.0,
-                child: TableCalendar(
-                  firstDay: DateTime(2022),
-                  lastDay: DateTime(2023),
-                  focusedDay: DateTime.utc(
-                      _focusedDay.year, _focusedDay.month, _focusedDay.day),
-                  calendarFormat: _calendarFormat,
-                  calendarStyle: CalendarStyle(
-                      todayDecoration: BoxDecoration(
-                          color: Color(0xff95D4D8), shape: BoxShape.circle)),
-                  selectedDayPredicate: (day) {
-                    return isSameDay(_selectedDay, day);
-                  },
-                  onDaySelected: (selectedDay, focusedDay) {
-                    setState(() {
-                      _selectedDay = selectedDay;
-                      _focusedDay = focusedDay;
-                    });
-                    showWidget = true;
-                    showDialog(
-                      context: context,
-                      builder: (BuildContext context) =>
-                          _buildPopupDialog(context),
-                    );
-                  },
-                  onFormatChanged: (format) {
-                    if (_calendarFormat != format) {
-                      setState(() {
-                        _calendarFormat = format;
-                      });
-                    }
-                  },
-                  onPageChanged: (focusedDay) {
-                    _focusedDay = focusedDay;
-                  },
-                  eventLoader: _getEventsfromDay,
-                ),
-              ),
-            ),
+            _items[0],
+            _items.isNotEmpty
+                ? Expanded(
+                    child: SizedBox(
+                      height: 300.0,
+                      width: 300.0,
+                      child: TableCalendar(
+                        firstDay: DateTime(2022),
+                        lastDay: DateTime(2023),
+                        focusedDay: DateTime.utc(_focusedDay.year,
+                            _focusedDay.month, _focusedDay.day),
+                        calendarFormat: _calendarFormat,
+                        calendarStyle: CalendarStyle(
+                            todayDecoration: BoxDecoration(
+                                color: Color(0xff95D4D8),
+                                shape: BoxShape.circle)),
+                        selectedDayPredicate: (day) {
+                          return isSameDay(_selectedDay, day);
+                        },
+                        onDaySelected: (selectedDay, focusedDay) {
+                          setState(() {
+                            _selectedDay = selectedDay;
+                            _focusedDay = focusedDay;
+                          });
+                          showWidget = true;
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) =>
+                                _buildPopupDialog(context),
+                          );
+                        },
+                        onFormatChanged: (format) {
+                          if (_calendarFormat != format) {
+                            setState(() {
+                              _calendarFormat = format;
+                            });
+                          }
+                        },
+                        onPageChanged: (focusedDay) {
+                          _focusedDay = focusedDay;
+                        },
+                        eventLoader: _getEventsfromDay,
+                      ),
+                    ),
+                  )
+                : Container(),
             selectedEvents[DateTime.utc(_selectedDay.year, _selectedDay.month,
                         _selectedDay.day)] !=
                     null
