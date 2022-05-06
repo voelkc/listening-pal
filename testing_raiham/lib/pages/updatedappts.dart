@@ -80,16 +80,16 @@ class _TableBasicsState extends State<UpdatedApptPage> {
               ),
             ),
             SizedBox(width: MediaQuery.of(context).size.width * 0.07),
-            TextButton(
-              onPressed: () => home.goToResources(context),
-              child: Text(
-                'Resources',
-                textAlign: TextAlign.right,
-                style: GoogleFonts.roboto(
-                        textStyle: Theme.of(context).textTheme.bodyText1)
-                    .copyWith(decoration: TextDecoration.none),
-              ),
-            ),
+            // TextButton(
+            //   onPressed: () => home.goToResources(context),
+            //   child: Text(
+            //     'Resources',
+            //     textAlign: TextAlign.right,
+            //     style: GoogleFonts.roboto(
+            //             textStyle: Theme.of(context).textTheme.bodyText1)
+            //         .copyWith(decoration: TextDecoration.none),
+            //   ),
+            // ),
             TextButton(
               onPressed: () => launchURL('https://listeningpal.com/'),
               child: Text(

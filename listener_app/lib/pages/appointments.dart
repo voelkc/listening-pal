@@ -5,6 +5,7 @@ import './updatedappts.dart';
 import './home.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
+import 'dart:convert';
 
 class Event {
   const Event(this.sessionTime, this.title);
@@ -81,7 +82,8 @@ class _TableBasicsState extends State<ApptPage> {
           ),
           SizedBox(width: MediaQuery.of(context).size.width * 0.07),
           TextButton(
-            onPressed: () => home.goToResources(context),
+            onPressed: () => null,
+            // home.goToResources(context),
             child: Text(
               'Resources',
               textAlign: TextAlign.right,
@@ -103,9 +105,7 @@ class _TableBasicsState extends State<ApptPage> {
         //   )
         // ],
       ),
-      body:
-
-      Center(
+      body: Center(
           child: Padding(
         padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
         child: Column(
@@ -169,22 +169,22 @@ class _TableBasicsState extends State<ApptPage> {
                 width: 300.0,
                 child:
                     // use to pull from aws
-  //                   StreamBuilder(
-  //               stream: eventDBS.streamQueryList(args: [
-  //             QueryArgsV2(
-  //             "user_id",
-  //               isEqualTo: context.read(userRepoProvider).user.id,
-  //             ),
-  //               ]),
-  //                     builder: (BuildContext context, AsyncSnapshot snapshot) {
-  // if (snapshot.hasData) {
-  // final events = snapshot.data;
-  // _groupEvents(events);
-  // DateTime selectedDate = _selectedDay;
-  // final _selectedEvents = _groupedEvents[selectedDate] ?? [];
-  // return ...
-  //                     ,)
-                TableCalendar(
+                    //                   StreamBuilder(
+                    //               stream: eventDBS.streamQueryList(args: [
+                    //             QueryArgsV2(
+                    //             "user_id",
+                    //               isEqualTo: context.read(userRepoProvider).user.id,
+                    //             ),
+                    //               ]),
+                    //                     builder: (BuildContext context, AsyncSnapshot snapshot) {
+                    // if (snapshot.hasData) {
+                    // final events = snapshot.data;
+                    // _groupEvents(events);
+                    // DateTime selectedDate = _selectedDay;
+                    // final _selectedEvents = _groupedEvents[selectedDate] ?? [];
+                    // return ...
+                    //                     ,)
+                    TableCalendar(
                   firstDay: DateTime(2022),
                   lastDay: DateTime(2023),
                   focusedDay: DateTime.utc(
@@ -509,8 +509,7 @@ class _TableBasicsState extends State<ApptPage> {
                             children: [
                                 Row(
                                   children: [
-                                    Text(
-                                        'Book the following appointment:',
+                                    Text('Book the following appointment:',
                                         style: GoogleFonts.roboto(
                                           textStyle: TextStyle(
                                               fontSize: 12.0,

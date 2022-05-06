@@ -81,7 +81,8 @@ class _TableBasicsState extends State<UpdatedApptPage> {
             ),
             SizedBox(width: MediaQuery.of(context).size.width * 0.07),
             TextButton(
-              onPressed: () => home.goToResources(context),
+              onPressed: () => null,
+              // home.goToResources(context),
               child: Text(
                 'Resources',
                 textAlign: TextAlign.right,

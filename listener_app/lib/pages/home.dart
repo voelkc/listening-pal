@@ -6,11 +6,98 @@ import '../main.dart';
 import './onboarding.dart';
 import './resourcespage.dart';
 import './callpage.dart';
+import 'dart:convert';
 import './appointments.dart';
-
+import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 
-class HomePage extends StatelessWidget {
+int creditsAvailRightNow = 0;
+Future<Album>? _futureAlbum;
+Object bodyToSend = {
+  "userID": 1,
+  "email": "tian@listeningpal.com",
+  "amount": 50,
+  "dateTime": 0,
+  "creditsToAdd": 1,
+  "stripeNotes": "from postman raw body"
+};
+Future<Album> getUserCreds() async {
+  final response = await http.post(
+      Uri.parse(
+          'https://54sz8yaq55.execute-api.us-west-2.amazonaws.com/existingUserGetsCredits'),
+      headers: {
+        'Content-Type': 'application/json; charset=UTF-8',
+        "Accept": 'application/json; charset=UTF-8',
+        // "accept-encoding": "gzip, deflate, br",
+        // "amount": "1",
+        // "content-length": "135",
+        // "creditstoadd": "1",
+        // "datetime": "0",
+        // "email": "tian@listeningpal.com",
+        // "host": "54sz8yaq55.execute-api.us-west-2.amazonaws.com",
+        // "postman-token": "a04e1c2d-e07a-460d-91fa-15dd19dcfc30",
+        // "stripenotes": "test-integration",
+        // "user-agent": "PostmanRuntime/7.29.0",
+        // "userid": "1",
+        "x-amzn-trace-id": "Root=1-627300a3-1cd42e8d4f6d595d27890e01",
+        "x-forwarded-for": "73.97.149.25",
+        "x-forwarded-port": "443",
+        "x-forwarded-proto": "https"
+      },
+      body: jsonEncode(bodyToSend));
+  if (response.statusCode == 201) {
+    // If the server did return a 201 CREATED response,
+    // then parse the JSON.
+
+    return Album.fromJSON(jsonDecode(response.body));
+  } else {
+    // If the server did not return a 201 CREATED response,
+    // then throw an exception.
+
+    throw Exception('Failed to create album.');
+  }
+}
+
+class Album {
+  final int id;
+  final String email;
+  final int creditsAvail;
+  final int currSub;
+  const Album(
+      {required this.id,
+      required this.email,
+      required this.creditsAvail,
+      required this.currSub});
+  factory Album.fromJSON(Map<String, dynamic> json) {
+    return Album(
+        id: json['UserID'],
+        email: json['Email'],
+        creditsAvail: json['CreditsAvailable'],
+        currSub: json['CurrentlySubscribed']);
+  }
+}
+
+// class Album {
+//   final int id;
+//   final String title;
+
+//   const Album({required this.id, required this.title});
+
+//   factory Album.fromJson(Map<String, dynamic> json) {
+//     return Album(
+//       id: json['id'],
+//       title: json['title'],
+//     );
+//   }
+// }
+
+class HomePage extends StatefulWidget {
+  @override
+  _HomePage createState() => _HomePage();
+}
+
+class _HomePage extends State<HomePage> {
+  Future<Album>? _futureAlbum;
   final ApptPage appt = ApptPage();
   DateTime _selectedDay = DateTime.utc(2022, 3, 10);
   List<DateTime> apptDays = [
@@ -20,10 +107,10 @@ class HomePage extends StatelessWidget {
     DateTime.utc(2022, 3, 25)
   ];
   Map<DateTime, List<Event>> selectedEvents = {
-    DateTime.utc(2022, 3, 3): [Event('3:30-4 PM', "Call with Pal")],
-    DateTime.utc(2022, 3, 10): [Event('3:30-4 PM', "Call with Pal")],
-    DateTime.utc(2022, 3, 21): [Event('1:30-2 PM', "Call with Pal")],
-    DateTime.utc(2022, 3, 25): [Event('9-9:30 PM', "Call with Pal")],
+    DateTime.utc(2022, 3, 3): [Event('3:30-4 PM', "Call with Jane")],
+    DateTime.utc(2022, 3, 10): [Event('3:30-4 PM', "Call with Jane")],
+    DateTime.utc(2022, 3, 21): [Event('1:30-2 PM', "Call with Toby")],
+    DateTime.utc(2022, 3, 25): [Event('9-9:30 PM', "Call with Jane")],
   };
   String selectedSession = '';
 
@@ -32,8 +119,14 @@ class HomePage extends StatelessWidget {
   }
 
   @override
+  void initState() {
+    getUserCreds();
+  }
+
+  @override
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(
+            automaticallyImplyLeading: false,
             backgroundColor: Theme.of(context).scaffoldBackgroundColor,
             title: Row(
               mainAxisAlignment: MainAxisAlignment.end,
@@ -77,7 +170,7 @@ class HomePage extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Hey, Listener!',
+                                  'Hey, listener!',
                                   //style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
                                   style: GoogleFonts.dongle(
                                       textStyle: Theme.of(context)
@@ -98,17 +191,23 @@ class HomePage extends StatelessWidget {
                                               .textTheme
                                               .bodyText2),
                                     ),
+                                    (_futureAlbum == null)
+                                        ? TextSpan(
+                                            text: '0',
+                                            style: GoogleFonts.roboto(
+                                                textStyle: Theme.of(context)
+                                                    .textTheme
+                                                    .bodyText2),
+                                          )
+                                        : TextSpan(
+                                            text: '$_futureAlbum.creditsAvail',
+                                            style: GoogleFonts.roboto(
+                                                textStyle: Theme.of(context)
+                                                    .textTheme
+                                                    .bodyText2),
+                                          ), //dumb ass state name
                                     TextSpan(
-                                      text: selectedEvents.length.toString(),
-                                      style: GoogleFonts.roboto(
-                                              textStyle: Theme.of(context)
-                                                  .textTheme
-                                                  .bodyText2)
-                                          .copyWith(
-                                              fontWeight: FontWeight.bold),
-                                    ),
-                                    TextSpan(
-                                      text: ' appointments scheduled',
+                                      text: ' credits available',
                                       style: GoogleFonts.roboto(
                                           textStyle: Theme.of(context)
                                               .textTheme
@@ -131,9 +230,10 @@ class HomePage extends StatelessWidget {
                                               side: const BorderSide(
                                                   width: 2.5,
                                                   color: Color(0xff95D4D8))))),
-                                  onPressed: () => goToApptPage(context),
+                                  onPressed: () =>
+                                      launchURL('https://listeningpal.com/'),
                                   child: Text(
-                                    'Schedule',
+                                    'Get Credits',
                                     style: GoogleFonts.roboto(
                                         textStyle:
                                             Theme.of(context).textTheme.button),
@@ -142,27 +242,27 @@ class HomePage extends StatelessWidget {
                               ]),
                         ]),
                     const SizedBox(height: 4),
-                    // ElevatedButton(
-                    //   style: ButtonStyle(
-                    //       elevation: MaterialStateProperty.all<double>(0),
-                    //       backgroundColor: MaterialStateProperty.all<Color>(
-                    //           const Color.fromRGBO(149, 212, 216, 1)),
-                    //       shape:
-                    //           MaterialStateProperty.all<RoundedRectangleBorder>(
-                    //               RoundedRectangleBorder(
-                    //                   borderRadius: BorderRadius.circular(18.0),
-                    //                   side: const BorderSide(
-                    //                       color: Color(0xff95D4D8))))),
-                    //   onPressed: () => goToApptPage(context),
-                    //   child: Padding(
-                    //     padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
-                    //     child: Text(
-                    //       'Schedule an Appointment',
-                    //       style: GoogleFonts.roboto(
-                    //           textStyle: Theme.of(context).textTheme.button),
-                    //     ),
-                    //   ),
-                    // ),
+                    ElevatedButton(
+                      style: ButtonStyle(
+                          elevation: MaterialStateProperty.all<double>(0),
+                          backgroundColor: MaterialStateProperty.all<Color>(
+                              const Color.fromRGBO(149, 212, 216, 1)),
+                          shape:
+                              MaterialStateProperty.all<RoundedRectangleBorder>(
+                                  RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(18.0),
+                                      side: const BorderSide(
+                                          color: Color(0xff95D4D8))))),
+                      onPressed: () => goToApptPage(context),
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+                        child: Text(
+                          'Schedule an Appointment',
+                          style: GoogleFonts.roboto(
+                              textStyle: Theme.of(context).textTheme.button),
+                        ),
+                      ),
+                    ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
@@ -241,7 +341,7 @@ class HomePage extends StatelessWidget {
                                                     color:
                                                         Color(0xff95D4D8))))),
                                         onPressed: () => _presentJoinOverlay(
-                                            'Pal|March 3, 2022|3:30 - 4:00pm'),
+                                            'Jane|March 3, 2022|3:30 - 4:00pm'),
                                         child: Row(
                                           mainAxisAlignment:
                                               MainAxisAlignment.spaceBetween,
@@ -255,7 +355,7 @@ class HomePage extends StatelessWidget {
                                                     CrossAxisAlignment.start,
                                                 children: [
                                                   Text(
-                                                    'Call With Pal',
+                                                    'Call with Jane',
                                                     style: GoogleFonts.roboto(
                                                       textStyle:
                                                           Theme.of(context)
@@ -399,7 +499,7 @@ class HomePage extends StatelessWidget {
                                             ))),
                                         onPressed: () =>
                                             _presentAppointmentDetailsOverlay(
-                                                'Pal|March 10, 2022|3:30 - 4:00pm'),
+                                                'Jane|March 10, 2022|3:30 - 4:00pm'),
                                         child: Row(
                                           mainAxisAlignment:
                                               MainAxisAlignment.spaceBetween,
@@ -413,7 +513,7 @@ class HomePage extends StatelessWidget {
                                                     CrossAxisAlignment.start,
                                                 children: [
                                                   Text(
-                                                    'Call With Pal',
+                                                    'Call with Jane',
                                                     style: GoogleFonts.roboto(
                                                       textStyle:
                                                           Theme.of(context)
@@ -500,7 +600,7 @@ class HomePage extends StatelessWidget {
                                             ))),
                                         onPressed: () =>
                                             _presentAppointmentDetailsOverlay(
-                                                'Pal|March 21, 2022|1:30 - 2:00pm'),
+                                                'Toby|March 21, 2022|1:30 - 2:00pm'),
                                         child: Row(
                                           mainAxisAlignment:
                                               MainAxisAlignment.spaceBetween,
@@ -514,7 +614,7 @@ class HomePage extends StatelessWidget {
                                                     CrossAxisAlignment.start,
                                                 children: [
                                                   Text(
-                                                    'Call With Pal',
+                                                    'Call with Toby',
                                                     style: GoogleFonts.roboto(
                                                       textStyle:
                                                           Theme.of(context)
@@ -536,7 +636,7 @@ class HomePage extends StatelessWidget {
                                                   ),
                                                 ]),
                                             const SizedBox(
-                                              width: 119,
+                                              width: 110,
                                             ),
                                           ],
                                         )),
@@ -601,7 +701,7 @@ class HomePage extends StatelessWidget {
                                             ))),
                                         onPressed: () =>
                                             _presentAppointmentDetailsOverlay(
-                                                'Pal|March 25, 2022|9:00 - 9:30am'),
+                                                'Jane|March 25, 2022|9:00 - 9:30am'),
                                         child: Row(
                                           mainAxisAlignment:
                                               MainAxisAlignment.spaceBetween,
@@ -615,7 +715,7 @@ class HomePage extends StatelessWidget {
                                                     CrossAxisAlignment.start,
                                                 children: [
                                                   Text(
-                                                    'Call With Pal',
+                                                    'Call with Jane',
                                                     style: GoogleFonts.roboto(
                                                       textStyle:
                                                           Theme.of(context)
@@ -695,6 +795,20 @@ class HomePage extends StatelessWidget {
   void goToApptPage(context) => Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (_) => ApptPage()),
       );
+  FutureBuilder<Album> buildFutureBuilder() {
+    return FutureBuilder<Album>(
+      future: _futureAlbum,
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          return Text('$snapshot.data!.creditsAvail');
+        } else if (snapshot.hasError) {
+          return Text('${snapshot.error}');
+        }
+
+        return const CircularProgressIndicator();
+      },
+    );
+  }
 }
 
 // Overlay Control stuff
@@ -853,7 +967,7 @@ class _JoinOverlayView extends State<JoinOverlayView> {
                             Padding(
                               padding: const EdgeInsets.fromLTRB(3, 20, 25, 0),
                               child: Text(
-                                  'By joining this call, I agree to the terms of service. If you or the listener are experiencing crisis, hang up and call 911 or go to the nearest emergency room or call 1-800-273-TALK',
+                                  'By joining this call, I agree to the terms of service. If you are experiencing crisis, hang up and call 911 or go to the nearest emergency room or call 1-800-273-TALK',
                                   style: GoogleFonts.roboto(
                                     textStyle:
                                         Theme.of(context).textTheme.bodyText2,

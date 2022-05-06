@@ -6,11 +6,68 @@ import '../main.dart';
 import './onboarding.dart';
 import './resourcespage.dart';
 import './callpage.dart';
+import 'dart:convert';
 import './appointments.dart';
-
+import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 
-class HomePage extends StatelessWidget {
+int creditsAvailRightNow = 0;
+Future<Album>? _futureAlbum;
+Object bodyToSend = {
+  "userID": 1,
+  "email": "tian@listeningpal.com",
+  "amount": 50,
+  "dateTime": 0,
+  "creditsToAdd": 1,
+  "stripeNotes": "from postman raw body"
+};
+Future<Album> getUserCreds(int uid) async {
+  final response = await http.post(
+      Uri.parse(
+          'https://54sz8yaq55.execute-api.us-west-2.amazonaws.com/existingUserGetsCredits'),
+      body: jsonEncode(bodyToSend));
+  if (response.statusCode == 201) {
+    // If the server did return a 201 CREATED response,
+    // then parse the JSON.
+    setState() {
+      creditsAvailRightNow =
+          Album.fromJSON(jsonDecode(response.body)).creditsAvail;
+    }
+
+    return Album.fromJSON(jsonDecode(response.body));
+  } else {
+    // If the server did not return a 201 CREATED response,
+    // then throw an exception.
+    throw Exception('Failed to create album.');
+  }
+}
+
+class Album {
+  final int id;
+  final String email;
+  final int creditsAvail;
+  final int currSub;
+  const Album(
+      {required this.id,
+      required this.email,
+      required this.creditsAvail,
+      required this.currSub});
+  factory Album.fromJSON(Map<String, dynamic> json) {
+    return Album(
+        id: json['UserID'],
+        email: json['Email'],
+        creditsAvail: json['CreditsAvailable'],
+        currSub: json['CurrentlySubscribed']);
+  }
+}
+
+class HomePage extends StatefulWidget {
+  @override
+  _HomePage createState() => _HomePage();
+}
+
+class _HomePage extends State<HomePage> {
+  Future<Album>? _futureAlbum;
   final ApptPage appt = ApptPage();
   DateTime _selectedDay = DateTime.utc(2022, 3, 10);
   List<DateTime> apptDays = [
@@ -59,601 +116,619 @@ class HomePage extends StatelessWidget {
                 ),
               ],
             )),
-
-
-        resizeToAvoidBottomInset : false,
-
+        resizeToAvoidBottomInset: false,
         body: Stack(
           children: [
             SingleChildScrollView(
               child: Padding(
-              padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Hey, pal!',
-                                //style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
-                                style: GoogleFonts.dongle(
-                                    textStyle:
-                                        Theme.of(context).textTheme.headline1),
-                              ),
-                            ]),
-                        Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              RichText(
-                                text: TextSpan(children: [
-                                  TextSpan(
+                padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Hey, pal!',
+                                  //style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
+                                  style: GoogleFonts.dongle(
+                                      textStyle: Theme.of(context)
+                                          .textTheme
+                                          .headline1),
+                                ),
+                              ]),
+                          Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                RichText(
+                                  text: TextSpan(children: [
+                                    TextSpan(
                                       text: 'You have ',
                                       style: GoogleFonts.roboto(
-                                        textStyle:
-                                        Theme.of(context).textTheme.bodyText2),
-                                  ),
-                                  TextSpan(
-                                    text: '0',
-                                    style: GoogleFonts.roboto(
-                                        textStyle:
-                                        Theme.of(context).textTheme.bodyText2).copyWith(fontWeight: FontWeight.bold),
-                                  ),
-                                  TextSpan(
-                                    text: ' credits available',
-                                    style: GoogleFonts.roboto(
-                                        textStyle:
-                                        Theme.of(context).textTheme.bodyText2),
-                                  )
-                                ]),
-                              ),
-                              ElevatedButton(
-                                style: ButtonStyle(
-                                    elevation:
-                                        MaterialStateProperty.all<double>(0),
-                                    backgroundColor:
-                                        MaterialStateProperty.all<Color>(
-                                            const Color(0xffF9F9F9)),
-                                    shape: MaterialStateProperty.all<
-                                            RoundedRectangleBorder>(
-                                        RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(18.0),
-                                            side: const BorderSide(
-                                                width: 2.5,
-                                                color: Color(0xff95D4D8))))),
-                                onPressed: () =>
-                                    launchURL('https://listeningpal.com/'),
-                                child: Text(
-                                  'Get Credits',
-                                  style: GoogleFonts.roboto(
-                                      textStyle:
-                                          Theme.of(context).textTheme.button),
+                                          textStyle: Theme.of(context)
+                                              .textTheme
+                                              .bodyText2),
+                                    ),
+                                    TextSpan(
+                                        text: "$creditsAvailRightNow",
+                                        style: GoogleFonts.roboto(
+                                            textStyle: Theme.of(context)
+                                                .textTheme
+                                                .bodyText2)), //dumb ass state name
+                                    TextSpan(
+                                      text: ' credits available',
+                                      style: GoogleFonts.roboto(
+                                          textStyle: Theme.of(context)
+                                              .textTheme
+                                              .bodyText2),
+                                    )
+                                  ]),
                                 ),
-                              ),
-                            ]),
-                      ]),
-                  const SizedBox(height: 4),
-                  ElevatedButton(
-                    style: ButtonStyle(
-                        elevation: MaterialStateProperty.all<double>(0),
-                        backgroundColor: MaterialStateProperty.all<Color>(
-                            const Color.fromRGBO(149, 212, 216, 1)),
-                        shape:
-                            MaterialStateProperty.all<RoundedRectangleBorder>(
-                                RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(18.0),
-                                    side: const BorderSide(
-                                        color: Color(0xff95D4D8))))),
-                    onPressed: () => goToApptPage(context),
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
-                      child: Text(
-                        'Schedule an Appointment',
-                        style: GoogleFonts.roboto(
-                            textStyle: Theme.of(context).textTheme.button),
+                                ElevatedButton(
+                                  style: ButtonStyle(
+                                      elevation:
+                                          MaterialStateProperty.all<double>(0),
+                                      backgroundColor:
+                                          MaterialStateProperty.all<Color>(
+                                              const Color(0xffF9F9F9)),
+                                      shape: MaterialStateProperty.all<
+                                              RoundedRectangleBorder>(
+                                          RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(18.0),
+                                              side: const BorderSide(
+                                                  width: 2.5,
+                                                  color: Color(0xff95D4D8))))),
+                                  onPressed: () =>
+                                      launchURL('https://listeningpal.com/'),
+                                  child: Text(
+                                    'Get Credits',
+                                    style: GoogleFonts.roboto(
+                                        textStyle:
+                                            Theme.of(context).textTheme.button),
+                                  ),
+                                ),
+                              ]),
+                        ]),
+                    const SizedBox(height: 4),
+                    ElevatedButton(
+                      style: ButtonStyle(
+                          elevation: MaterialStateProperty.all<double>(0),
+                          backgroundColor: MaterialStateProperty.all<Color>(
+                              const Color.fromRGBO(149, 212, 216, 1)),
+                          shape:
+                              MaterialStateProperty.all<RoundedRectangleBorder>(
+                                  RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(18.0),
+                                      side: const BorderSide(
+                                          color: Color(0xff95D4D8))))),
+                      onPressed: () => goToApptPage(context),
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+                        child: Text(
+                          'Schedule an Appointment',
+                          style: GoogleFonts.roboto(
+                              textStyle: Theme.of(context).textTheme.button),
+                        ),
                       ),
                     ),
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Today',
-                            //style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
-                            style: GoogleFonts.dongle(
-                                textStyle:
-                                    Theme.of(context).textTheme.headline1),
-                          ),
-                          // NO APPOINTMENTS TEXT BEGINNING
-                          // Text(
-                          //   'No appointments scheduled today',
-                          //   //style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
-                          //   style: GoogleFonts.roboto(
-                          //       textStyle:
-                          //       Theme.of(context).textTheme.bodyText2),
-                          // ),
-                          // NO APPOINTMENTS TEXT END
-                          // BEGINNING OF COOL STUFF
-                          Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Today',
+                              //style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
+                              style: GoogleFonts.dongle(
+                                  textStyle:
+                                      Theme.of(context).textTheme.headline1),
+                            ),
+                            // NO APPOINTMENTS TEXT BEGINNING
+                            // Text(
+                            //   'No appointments scheduled today',
+                            //   //style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
+                            //   style: GoogleFonts.roboto(
+                            //       textStyle:
+                            //       Theme.of(context).textTheme.bodyText2),
+                            // ),
+                            // NO APPOINTMENTS TEXT END
+                            // BEGINNING OF COOL STUFF
+                            Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.end,
+                                      children: [
+                                        Text(
+                                          'THU',
+                                          style: GoogleFonts.roboto(
+                                            textStyle: Theme.of(context)
+                                                .textTheme
+                                                .bodyText2,
+                                          ).copyWith(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                        Text(
+                                          '3',
+                                          style: GoogleFonts.roboto(
+                                            textStyle: Theme.of(context)
+                                                .textTheme
+                                                .bodyText2,
+                                          ).copyWith(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 36),
+                                        ),
+                                      ]),
+                                  const SizedBox(
+                                    width: 20,
+                                  ),
+                                  ButtonTheme(
+                                    child: TextButton(
+                                        //TODO: REMOVE FOR TESTING ONLY, should replace with stateful widget
+                                        style: ButtonStyle(
+                                            padding: MaterialStateProperty.all<
+                                                EdgeInsets>(EdgeInsets.all(20)),
+                                            // elevation:
+                                            // MaterialStateProperty.all<double>(2.5),
+                                            backgroundColor:
+                                                MaterialStateProperty.all<Color>(
+                                                    Colors.white),
+                                            shape: MaterialStateProperty.all<RoundedRectangleBorder>(RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(10.0),
+                                                side: const BorderSide(
+                                                    width: 2.0,
+                                                    color:
+                                                        Color(0xff95D4D8))))),
+                                        onPressed: () => _presentJoinOverlay(
+                                            'Jane|March 3, 2022|3:30 - 4:00pm'),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          children: [
+                                            Column(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.start,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    'Call with Jane',
+                                                    style: GoogleFonts.roboto(
+                                                      textStyle:
+                                                          Theme.of(context)
+                                                              .textTheme
+                                                              .bodyText2,
+                                                    ).copyWith(
+                                                        fontSize: 18,
+                                                        fontWeight:
+                                                            FontWeight.bold),
+                                                  ),
+                                                  Text(
+                                                    'at 3:30 - 4:30pm PST',
+                                                    style: GoogleFonts.roboto(
+                                                      textStyle:
+                                                          Theme.of(context)
+                                                              .textTheme
+                                                              .bodyText2,
+                                                    ).copyWith(fontSize: 16),
+                                                  ),
+                                                ]),
+                                            const SizedBox(
+                                              width: 80,
+                                            ),
+                                            const Icon(
+                                              Icons.call_outlined,
+                                              color: Color(0xff41434D),
+                                              size: 30.0,
+                                              // textDirection: TextDirection.RTL,
+                                              semanticLabel:
+                                                  'Text to announce in accessibility modes',
+                                            ),
+                                          ],
+                                        )),
+                                  )
+                                ])
+                            // END OF COOL STUFF
+                          ],
+                        ),
+                      ],
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Flex(
+                              direction: Axis.horizontal,
+                              mainAxisSize: MainAxisSize.max,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    children: [
-                                      Text(
-                                        'THU',
-                                        style: GoogleFonts.roboto(
-                                          textStyle: Theme.of(context)
-                                              .textTheme
-                                              .bodyText2,
-                                        ).copyWith(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                      Text(
-                                        '3',
-                                        style: GoogleFonts.roboto(
-                                          textStyle: Theme.of(context)
-                                              .textTheme
-                                              .bodyText2,
-                                        ).copyWith(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 36),
-                                      ),
-                                    ]),
-                                const SizedBox(
-                                  width: 20,
+                                Text(
+                                  'This Month',
+                                  //style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
+                                  style: GoogleFonts.dongle(
+                                      textStyle: Theme.of(context)
+                                          .textTheme
+                                          .headline1),
                                 ),
-                                ButtonTheme(
-                                  child: TextButton(
-                                      //TODO: REMOVE FOR TESTING ONLY, should replace with stateful widget
-                                      style: ButtonStyle(
-                                          padding:
-                                              MaterialStateProperty.all<EdgeInsets>(
-                                                  EdgeInsets.all(20)),
-                                          // elevation:
-                                          // MaterialStateProperty.all<double>(2.5),
-                                          backgroundColor:
-                                              MaterialStateProperty.all<Color>(
-                                                  Colors.white),
-                                          shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                                              RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          10.0),
-                                                  side: const BorderSide(
-                                                      width: 2.0,
-                                                      color:
-                                                          Color(0xff95D4D8))))),
-                                      onPressed: () =>
-                                          _presentJoinOverlay('Jane|March 3, 2022|3:30 - 4:00pm'),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        children: [
-                                          Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.start,
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  'Call with Jane',
-                                                  style: GoogleFonts.roboto(
-                                                    textStyle: Theme.of(context)
-                                                        .textTheme
-                                                        .bodyText2,
-                                                  ).copyWith(
-                                                      fontSize: 18,
-                                                      fontWeight:
-                                                          FontWeight.bold),
-                                                ),
-                                                Text(
-                                                  'at 3:30 - 4:30pm PST',
-                                                  style: GoogleFonts.roboto(
-                                                    textStyle: Theme.of(context)
-                                                        .textTheme
-                                                        .bodyText2,
-                                                  ).copyWith(fontSize: 16),
-                                                ),
-                                              ]),
-                                          const SizedBox(
-                                            width: 80,
-                                          ),
-                                          const Icon(
-                                            Icons.call_outlined,
-                                            color: Color(0xff41434D),
-                                            size: 30.0,
-                                            // textDirection: TextDirection.RTL,
-                                            semanticLabel:
-                                                'Text to announce in accessibility modes',
-                                          ),
-                                        ],
-                                      )),
+                                const Padding(
+                                  padding: EdgeInsets.fromLTRB(120, 0, 0, 0),
+                                  child: Icon(
+                                    Icons.calendar_month_rounded,
+                                    color: Color(0xff41434D),
+                                    size: 30.0,
+                                    semanticLabel:
+                                        'Text to announce in accessibility modes',
+                                  ),
                                 )
-                              ])
-                          // END OF COOL STUFF
-                        ],
-                      ),
-                    ],
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Flex(
-                            direction: Axis.horizontal,
-                            mainAxisSize: MainAxisSize.max,
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Text(
-                                'This Month',
-                                //style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
-                                style: GoogleFonts.dongle(
-                                    textStyle:
-                                        Theme.of(context).textTheme.headline1),
-                              ),
-                              const Padding(
-                                padding: EdgeInsets.fromLTRB(120, 0, 0, 0),
-                                child: Icon(
-                                  Icons.calendar_month_rounded,
-                                  color: Color(0xff41434D),
-                                  size: 30.0,
-                                  semanticLabel:
-                                      'Text to announce in accessibility modes',
-                                ),
-                              )
-                            ],
-                          ),
-                          // NO APPOINTMENTS TEXT START
-                          // Text(
-                          //   'No upcoming appointments this month',
-                          //   //style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
-                          //   style: GoogleFonts.roboto(
-                          //       textStyle:
-                          //           Theme.of(context).textTheme.bodyText2),
-                          // ),
-                          // NO APPOINTMENTS TEXT END
-                          // ListView(
-                          //   padding: const EdgeInsets.all(8),
-                          //   children: <Widget>[
-                          //
-                          //   ],
-                          // ),
-                          // BEGINNING OF COOL STUFF
-                          Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    children: [
-                                      Text(
-                                        'THU',
-                                        style: GoogleFonts.roboto(
-                                          textStyle: Theme.of(context)
-                                              .textTheme
-                                              .bodyText2,
-                                        ).copyWith(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                      Text(
-                                        '10',
-                                        style: GoogleFonts.roboto(
-                                          textStyle: Theme.of(context)
-                                              .textTheme
-                                              .bodyText2,
-                                        ).copyWith(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 36),
-                                      ),
-                                    ]),
-                                const SizedBox(
-                                  width: 15,
-                                ),
-                                ButtonTheme(
-                                  child: TextButton(
-                                      //TODO: REMOVE FOR TESTING ONLY, should replace with stateful widget
-                                      style: ButtonStyle(
-                                          padding: MaterialStateProperty.all<
-                                              EdgeInsets>(EdgeInsets.all(20)),
-                                          // elevation:
-                                          // MaterialStateProperty.all<double>(2.5),
-                                          backgroundColor:
-                                              MaterialStateProperty.all<Color>(
-                                                  Color(0xffC7C8CF)),
-                                          shape: MaterialStateProperty.all<
-                                                  RoundedRectangleBorder>(
-                                              RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(10.0),
-                                          ))),
-                                      onPressed: () =>
-                                          _presentAppointmentDetailsOverlay(
-                                              'Jane|March 10, 2022|3:30 - 4:00pm'),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        children: [
-                                          Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.start,
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  'Call with Jane',
-                                                  style: GoogleFonts.roboto(
-                                                    textStyle: Theme.of(context)
-                                                        .textTheme
-                                                        .bodyText2,
-                                                  ).copyWith(
-                                                      fontSize: 18,
-                                                      fontWeight:
-                                                          FontWeight.bold),
-                                                ),
-                                                Text(
-                                                  'at 3:30 - 4:30pm PST',
-                                                  style: GoogleFonts.roboto(
-                                                    textStyle: Theme.of(context)
-                                                        .textTheme
-                                                        .bodyText2,
-                                                  ).copyWith(fontSize: 16),
-                                                ),
-                                              ]),
-                                          const SizedBox(
-                                            width: 110,
-                                          ),
-                                        ],
-                                      )),
-                                )
-                              ]),
-                          // END OF COOL STUFF
-                          const SizedBox(
-                            height: 20,
-                          ),
-                          // BEGINNING OF COOL STUFF
-                          Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    children: [
-                                      Text(
-                                        'THU',
-                                        style: GoogleFonts.roboto(
-                                          textStyle: Theme.of(context)
-                                              .textTheme
-                                              .bodyText2,
-                                        ).copyWith(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                      Text(
-                                        '21',
-                                        style: GoogleFonts.roboto(
-                                          textStyle: Theme.of(context)
-                                              .textTheme
-                                              .bodyText2,
-                                        ).copyWith(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 36),
-                                      ),
-                                    ]),
-                                const SizedBox(
-                                  width: 15,
-                                ),
-                                ButtonTheme(
-                                  child: TextButton(
-                                      //TODO: REMOVE FOR TESTING ONLY, should replace with stateful widget
-                                      style: ButtonStyle(
-                                          padding: MaterialStateProperty.all<
-                                              EdgeInsets>(EdgeInsets.all(20)),
-                                          // elevation:
-                                          // MaterialStateProperty.all<double>(2.5),
-                                          backgroundColor:
-                                              MaterialStateProperty.all<Color>(
-                                                  Color(0xffC7C8CF)),
-                                          shape: MaterialStateProperty.all<
-                                                  RoundedRectangleBorder>(
-                                              RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(10.0),
-                                          ))),
-                                      onPressed: () =>
-                                          _presentAppointmentDetailsOverlay(
-                                              'Toby|March 21, 2022|1:30 - 2:00pm'),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        children: [
-                                          Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.start,
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  'Call with Toby',
-                                                  style: GoogleFonts.roboto(
-                                                    textStyle: Theme.of(context)
-                                                        .textTheme
-                                                        .bodyText2,
-                                                  ).copyWith(
-                                                      fontSize: 18,
-                                                      fontWeight:
-                                                          FontWeight.bold),
-                                                ),
-                                                Text(
-                                                  'at 1:30 - 2:00pm PST',
-                                                  style: GoogleFonts.roboto(
-                                                    textStyle: Theme.of(context)
-                                                        .textTheme
-                                                        .bodyText2,
-                                                  ).copyWith(fontSize: 16),
-                                                ),
-                                              ]),
-                                          const SizedBox(
-                                            width: 110,
-                                          ),
-                                        ],
-                                      )),
-                                )
-                              ]),
-                          // END OF COOL STUFF
-                          const SizedBox(
-                            height: 20,
-                          ),
-                          // BEGINNING OF COOL STUFF
-                          Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    children: [
-                                      Text(
-                                        'FRI',
-                                        style: GoogleFonts.roboto(
-                                          textStyle: Theme.of(context)
-                                              .textTheme
-                                              .bodyText2,
-                                        ).copyWith(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                      Text(
-                                        '25',
-                                        style: GoogleFonts.roboto(
-                                          textStyle: Theme.of(context)
-                                              .textTheme
-                                              .bodyText2,
-                                        ).copyWith(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 36),
-                                      ),
-                                    ]),
-                                const SizedBox(
-                                  width: 15,
-                                ),
-                                ButtonTheme(
-                                  child: TextButton(
-                                      //TODO: REMOVE FOR TESTING ONLY, should replace with stateful widget
-                                      style: ButtonStyle(
-                                          padding: MaterialStateProperty.all<
-                                              EdgeInsets>(EdgeInsets.all(20)),
-                                          // elevation:
-                                          // MaterialStateProperty.all<double>(2.5),
-                                          backgroundColor:
-                                              MaterialStateProperty.all<Color>(
-                                                  Color(0xffC7C8CF)),
-                                          shape: MaterialStateProperty.all<
-                                                  RoundedRectangleBorder>(
-                                              RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(10.0),
-                                          ))),
-                                      onPressed: () =>
-                                          _presentAppointmentDetailsOverlay(
-                                              'Jane|March 25, 2022|9:00 - 9:30am'),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        children: [
-                                          Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.start,
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  'Call with Jane',
-                                                  style: GoogleFonts.roboto(
-                                                    textStyle: Theme.of(context)
-                                                        .textTheme
-                                                        .bodyText2,
-                                                  ).copyWith(
-                                                      fontSize: 18,
-                                                      fontWeight:
-                                                          FontWeight.bold),
-                                                ),
-                                                Text(
-                                                  'at 9:00 - 9:30am PST',
-                                                  style: GoogleFonts.roboto(
-                                                    textStyle: Theme.of(context)
-                                                        .textTheme
-                                                        .bodyText2,
-                                                  ).copyWith(fontSize: 16),
-                                                ),
-                                              ]),
-                                          const SizedBox(
-                                            width: 110,
-                                          ),
-                                        ],
-                                      )),
-                                )
-                              ]),
-                          // END OF COOL STUFF
-                        ],
-                      ),
-                    ],
-                  ),
-                  SizedBox(
-                    height: 30,
-                  ),
-                  // ElevatedButton(
-                  //   style: ButtonStyle(
-                  //       elevation: MaterialStateProperty.all<double>(0),
-                  //       backgroundColor: MaterialStateProperty.all<Color>(
-                  //           Color.fromRGBO(149, 212, 216, 1)),
-                  //       shape:
-                  //           MaterialStateProperty.all<RoundedRectangleBorder>(
-                  //               RoundedRectangleBorder(
-                  //                   borderRadius: BorderRadius.circular(18.0),
-                  //                   side: const BorderSide(
-                  //                       color: Color(0xff95D4D8))))),
-                  //   onPressed: () => goToOnBoarding(context),
-                  //   child: Text(
-                  //     'Go Back',
-                  //     style: GoogleFonts.roboto(
-                  //         textStyle: Theme.of(context).textTheme.button),
-                  //   ),
-                  // ),
-                ], // Chillen
+                              ],
+                            ),
+                            // NO APPOINTMENTS TEXT START
+                            // Text(
+                            //   'No upcoming appointments this month',
+                            //   //style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
+                            //   style: GoogleFonts.roboto(
+                            //       textStyle:
+                            //           Theme.of(context).textTheme.bodyText2),
+                            // ),
+                            // NO APPOINTMENTS TEXT END
+                            // ListView(
+                            //   padding: const EdgeInsets.all(8),
+                            //   children: <Widget>[
+                            //
+                            //   ],
+                            // ),
+                            // BEGINNING OF COOL STUFF
+                            Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.end,
+                                      children: [
+                                        Text(
+                                          'THU',
+                                          style: GoogleFonts.roboto(
+                                            textStyle: Theme.of(context)
+                                                .textTheme
+                                                .bodyText2,
+                                          ).copyWith(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                        Text(
+                                          '10',
+                                          style: GoogleFonts.roboto(
+                                            textStyle: Theme.of(context)
+                                                .textTheme
+                                                .bodyText2,
+                                          ).copyWith(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 36),
+                                        ),
+                                      ]),
+                                  const SizedBox(
+                                    width: 15,
+                                  ),
+                                  ButtonTheme(
+                                    child: TextButton(
+                                        //TODO: REMOVE FOR TESTING ONLY, should replace with stateful widget
+                                        style: ButtonStyle(
+                                            padding: MaterialStateProperty.all<
+                                                EdgeInsets>(EdgeInsets.all(20)),
+                                            // elevation:
+                                            // MaterialStateProperty.all<double>(2.5),
+                                            backgroundColor:
+                                                MaterialStateProperty.all<
+                                                    Color>(Color(0xffC7C8CF)),
+                                            shape: MaterialStateProperty.all<
+                                                    RoundedRectangleBorder>(
+                                                RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(10.0),
+                                            ))),
+                                        onPressed: () =>
+                                            _presentAppointmentDetailsOverlay(
+                                                'Jane|March 10, 2022|3:30 - 4:00pm'),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          children: [
+                                            Column(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.start,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    'Call with Jane',
+                                                    style: GoogleFonts.roboto(
+                                                      textStyle:
+                                                          Theme.of(context)
+                                                              .textTheme
+                                                              .bodyText2,
+                                                    ).copyWith(
+                                                        fontSize: 18,
+                                                        fontWeight:
+                                                            FontWeight.bold),
+                                                  ),
+                                                  Text(
+                                                    'at 3:30 - 4:30pm PST',
+                                                    style: GoogleFonts.roboto(
+                                                      textStyle:
+                                                          Theme.of(context)
+                                                              .textTheme
+                                                              .bodyText2,
+                                                    ).copyWith(fontSize: 16),
+                                                  ),
+                                                ]),
+                                            const SizedBox(
+                                              width: 110,
+                                            ),
+                                          ],
+                                        )),
+                                  )
+                                ]),
+                            // END OF COOL STUFF
+                            const SizedBox(
+                              height: 20,
+                            ),
+                            // BEGINNING OF COOL STUFF
+                            Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.end,
+                                      children: [
+                                        Text(
+                                          'THU',
+                                          style: GoogleFonts.roboto(
+                                            textStyle: Theme.of(context)
+                                                .textTheme
+                                                .bodyText2,
+                                          ).copyWith(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                        Text(
+                                          '21',
+                                          style: GoogleFonts.roboto(
+                                            textStyle: Theme.of(context)
+                                                .textTheme
+                                                .bodyText2,
+                                          ).copyWith(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 36),
+                                        ),
+                                      ]),
+                                  const SizedBox(
+                                    width: 15,
+                                  ),
+                                  ButtonTheme(
+                                    child: TextButton(
+                                        //TODO: REMOVE FOR TESTING ONLY, should replace with stateful widget
+                                        style: ButtonStyle(
+                                            padding: MaterialStateProperty.all<
+                                                EdgeInsets>(EdgeInsets.all(20)),
+                                            // elevation:
+                                            // MaterialStateProperty.all<double>(2.5),
+                                            backgroundColor:
+                                                MaterialStateProperty.all<
+                                                    Color>(Color(0xffC7C8CF)),
+                                            shape: MaterialStateProperty.all<
+                                                    RoundedRectangleBorder>(
+                                                RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(10.0),
+                                            ))),
+                                        onPressed: () =>
+                                            _presentAppointmentDetailsOverlay(
+                                                'Toby|March 21, 2022|1:30 - 2:00pm'),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          children: [
+                                            Column(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.start,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    'Call with Toby',
+                                                    style: GoogleFonts.roboto(
+                                                      textStyle:
+                                                          Theme.of(context)
+                                                              .textTheme
+                                                              .bodyText2,
+                                                    ).copyWith(
+                                                        fontSize: 18,
+                                                        fontWeight:
+                                                            FontWeight.bold),
+                                                  ),
+                                                  Text(
+                                                    'at 1:30 - 2:00pm PST',
+                                                    style: GoogleFonts.roboto(
+                                                      textStyle:
+                                                          Theme.of(context)
+                                                              .textTheme
+                                                              .bodyText2,
+                                                    ).copyWith(fontSize: 16),
+                                                  ),
+                                                ]),
+                                            const SizedBox(
+                                              width: 110,
+                                            ),
+                                          ],
+                                        )),
+                                  )
+                                ]),
+                            // END OF COOL STUFF
+                            const SizedBox(
+                              height: 20,
+                            ),
+                            // BEGINNING OF COOL STUFF
+                            Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.end,
+                                      children: [
+                                        Text(
+                                          'FRI',
+                                          style: GoogleFonts.roboto(
+                                            textStyle: Theme.of(context)
+                                                .textTheme
+                                                .bodyText2,
+                                          ).copyWith(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                        Text(
+                                          '25',
+                                          style: GoogleFonts.roboto(
+                                            textStyle: Theme.of(context)
+                                                .textTheme
+                                                .bodyText2,
+                                          ).copyWith(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 36),
+                                        ),
+                                      ]),
+                                  const SizedBox(
+                                    width: 15,
+                                  ),
+                                  ButtonTheme(
+                                    child: TextButton(
+                                        //TODO: REMOVE FOR TESTING ONLY, should replace with stateful widget
+                                        style: ButtonStyle(
+                                            padding: MaterialStateProperty.all<
+                                                EdgeInsets>(EdgeInsets.all(20)),
+                                            // elevation:
+                                            // MaterialStateProperty.all<double>(2.5),
+                                            backgroundColor:
+                                                MaterialStateProperty.all<
+                                                    Color>(Color(0xffC7C8CF)),
+                                            shape: MaterialStateProperty.all<
+                                                    RoundedRectangleBorder>(
+                                                RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(10.0),
+                                            ))),
+                                        onPressed: () =>
+                                            _presentAppointmentDetailsOverlay(
+                                                'Jane|March 25, 2022|9:00 - 9:30am'),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          children: [
+                                            Column(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.start,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    'Call with Jane',
+                                                    style: GoogleFonts.roboto(
+                                                      textStyle:
+                                                          Theme.of(context)
+                                                              .textTheme
+                                                              .bodyText2,
+                                                    ).copyWith(
+                                                        fontSize: 18,
+                                                        fontWeight:
+                                                            FontWeight.bold),
+                                                  ),
+                                                  Text(
+                                                    'at 9:00 - 9:30am PST',
+                                                    style: GoogleFonts.roboto(
+                                                      textStyle:
+                                                          Theme.of(context)
+                                                              .textTheme
+                                                              .bodyText2,
+                                                    ).copyWith(fontSize: 16),
+                                                  ),
+                                                ]),
+                                            const SizedBox(
+                                              width: 110,
+                                            ),
+                                          ],
+                                        )),
+                                  )
+                                ]),
+                            // END OF COOL STUFF
+                          ],
+                        ),
+                      ],
+                    ),
+                    SizedBox(
+                      height: 30,
+                    ),
+                    // ElevatedButton(
+                    //   style: ButtonStyle(
+                    //       elevation: MaterialStateProperty.all<double>(0),
+                    //       backgroundColor: MaterialStateProperty.all<Color>(
+                    //           Color.fromRGBO(149, 212, 216, 1)),
+                    //       shape:
+                    //           MaterialStateProperty.all<RoundedRectangleBorder>(
+                    //               RoundedRectangleBorder(
+                    //                   borderRadius: BorderRadius.circular(18.0),
+                    //                   side: const BorderSide(
+                    //                       color: Color(0xff95D4D8))))),
+                    //   onPressed: () => goToOnBoarding(context),
+                    //   child: Text(
+                    //     'Go Back',
+                    //     style: GoogleFonts.roboto(
+                    //         textStyle: Theme.of(context).textTheme.button),
+                    //   ),
+                    // ),
+                  ], // Chillen
+                ),
               ),
             ),
-  ),
             JoinOverlayView(key: UniqueKey()),
             EndOverlayView(key: UniqueKey()),
             CancelOverlayView(key: UniqueKey()),
@@ -1490,6 +1565,21 @@ class AppointmentDetailsOverlayView extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  FutureBuilder<Album> buildFutureBuilder() {
+    return FutureBuilder<Album>(
+      future: _futureAlbum,
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          return Text(snapshot.data!.email);
+        } else if (snapshot.hasError) {
+          return Text('${snapshot.error}');
+        }
+
+        return const CircularProgressIndicator();
+      },
     );
   }
 }

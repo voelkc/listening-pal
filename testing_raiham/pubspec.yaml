@@ -49,7 +49,7 @@ dependencies:
   table_calendar: ^3.0.4
 
   intl: ^0.17.0
-  async: ^2.9.0
+  async: ^2.8.2
   convert: ^3.0.1
 
 dev_dependencies:

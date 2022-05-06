@@ -7,6 +7,7 @@ import './updatedappts.dart';
 import './home.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
+import 'package:http/http.dart' as http;
 
 class Event {
   const Event(this.sessionTime, this.title);
@@ -39,15 +40,52 @@ class _TableBasicsState extends State<ApptPage> {
     super.initState();
   }
 
-  Future<void> readJson() async {
-    final String response =
-        await DefaultAssetBundle.of(context).loadString('events.json');
-    final data = await json.decode(response) as Map<DateTime, List<Event>>;
-    setState(() {
-      selectedEvents = data;
-    });
-  }
+  // Future<void> readJson() async {
+  //   final String response =
+  //       await DefaultAssetBundle.of(context).loadString('events.json');
+  //   final data = await json.decode(response) as Map<DateTime, List<Event>>;
+  //   setState(() {
+  //     selectedEvents = data;
+  //   });
+  // }
+  // class Album {
+  //   final int id;
+  //   final String email;
+  //   final int creditsAvail;
+  //   final int currSub;
+  //   const Album({required this.id, required this.email, required this.amount, required.dateTime, required.creditsToAdd, required.stripeNotes});
+  //   factory Album.fromJSON(Map<String, dynamic> json) {
+  //     return Album(
+  //       id: json['UserID'],
+  //       email: json['Email'],
+  //       creditsAvail: json['CreditsAvailable'],
+  //       currSub: json['CurrentlySubscribed']
+  //     )
+  //   }
+  // }
 
+//  Future<http.Response> getUserCreds(int uid) async {
+  //  final response = await http.post(
+  //    Uri.parse('https://54sz8yaq55.execute-api.us-west-2.amazonaws.com/existingUserGetsCredits'),
+  //    body: jsonEncode({
+  //      "userID": 1,
+  //      "email": "tian@listeningpal.com",
+  //      "amount": 50,
+  //      "dateTime": 0,
+  //      "creditsToAdd": 1,
+  //      "stripeNotes": "from postman raw body"})
+  //  )
+  //  if (response.statusCode == 201) {
+  //   // If the server did return a 201 CREATED response,
+  //   // then parse the JSON.
+  //   return Album.fromJson(jsonDecode(response.body));
+  // } else {
+  //   // If the server did not return a 201 CREATED response,
+  //   // then throw an exception.
+  //   throw Exception('Failed to create album.');
+  // }
+
+  // }
   List<Event> _getEventsfromDay(DateTime date) {
     return selectedEvents[date] ?? [];
   }
@@ -84,18 +122,17 @@ class _TableBasicsState extends State<ApptPage> {
                       .copyWith(decoration: TextDecoration.none),
                 ),
               ),
-              // SizedBox(width: MediaQuery.of(context).size.width * 0.07),
               const SizedBox(width: 60),
-              TextButton(
-                onPressed: () => home.goToResources(context),
-                child: Text(
-                  'Resources',
-                  textAlign: TextAlign.right,
-                  style: GoogleFonts.roboto(
-                          textStyle: Theme.of(context).textTheme.bodyText1)
-                      .copyWith(decoration: TextDecoration.none),
-                ),
-              ),
+              // TextButton(
+              //   onPressed: () => home.goToResources(context),
+              //   child: Text(
+              //     'Resources',
+              //     textAlign: TextAlign.right,
+              //     style: GoogleFonts.roboto(
+              //             textStyle: Theme.of(context).textTheme.bodyText1)
+              //         .copyWith(decoration: TextDecoration.none),
+              //   ),
+              // ),
               TextButton(
                 onPressed: () => launchURL('https://listeningpal.com/'),
                 child: Text(
