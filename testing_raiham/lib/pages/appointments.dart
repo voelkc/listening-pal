@@ -15,9 +15,49 @@ class Event {
   final String title;
 }
 
+Object body = {"userID": 1};
+
 class ApptPage extends StatefulWidget {
   @override
   _TableBasicsState createState() => _TableBasicsState();
+}
+
+class Album {
+  final int aid;
+  final int uid;
+  final int lid;
+  final DateTime stime;
+  final DateTime etime;
+  final String webRTC;
+  final int creditsBefore;
+  final int creditsAfter;
+  final int canceled;
+  final int comp;
+
+  const Album(
+      {required this.aid,
+      required this.uid,
+      required this.lid,
+      required this.stime,
+      required this.etime,
+      required this.webRTC,
+      required this.creditsBefore,
+      required this.creditsAfter,
+      required this.canceled,
+      required this.comp});
+  factory Album.fromJSON(Map<String, dynamic> json) {
+    return Album(
+        aid: json['AppointmentID'],
+        uid: json['UserID'],
+        lid: json['ListenerID'],
+        stime: json['StartTime'],
+        etime: json['EndTime'],
+        webRTC: json['WebRTCRoom'],
+        creditsBefore: json['UserCreditsBefore'],
+        creditsAfter: json['UserCreditsAfter'],
+        canceled: json['Canceled'],
+        comp: json['Completed']);
+  }
 }
 
 class _TableBasicsState extends State<ApptPage> {
@@ -32,67 +72,58 @@ class _TableBasicsState extends State<ApptPage> {
   String selectedTime = "";
   List _items = [];
 
-  Map<DateTime, List<Event>> selectedEvents = {};
+  Map<DateTime, List<Album>> selectedEvents = {};
 
   String selectedSession = '';
-  @override
-  void initState() {
-    super.initState();
+
+  Future<http.Response> createUserAppt() async {
+    print('trying');
+    final response = await http.post(
+        Uri.parse(
+            'https://54sz8yaq55.execute-api.us-west-2.amazonaws.com/getUserAppts'),
+        body: jsonEncode(body));
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to do anything');
+    }
   }
 
-  // Future<void> readJson() async {
-  //   final String response =
-  //       await DefaultAssetBundle.of(context).loadString('events.json');
-  //   final data = await json.decode(response) as Map<DateTime, List<Event>>;
-  //   setState(() {
-  //     selectedEvents = data;
-  //   });
-  // }
-  // class Album {
-  //   final int id;
-  //   final String email;
-  //   final int creditsAvail;
-  //   final int currSub;
-  //   const Album({required this.id, required this.email, required this.amount, required.dateTime, required.creditsToAdd, required.stripeNotes});
-  //   factory Album.fromJSON(Map<String, dynamic> json) {
-  //     return Album(
-  //       id: json['UserID'],
-  //       email: json['Email'],
-  //       creditsAvail: json['CreditsAvailable'],
-  //       currSub: json['CurrentlySubscribed']
-  //     )
-  //   }
-  // }
+  Future<List<Album>> getUserAppts() async {
+    print('trying');
+    final response = await http.post(
+        Uri.parse(
+            'https://54sz8yaq55.execute-api.us-west-2.amazonaws.com/getUserAppts'),
+        body: jsonEncode(body));
+    if (response.statusCode == 200) {
+      final jsonResponse = jsonDecode(response.body);
+      final data = jsonResponse['response'][0][0];
+      print('wee woo');
+      List<Album> userEvents = data;
+      return userEvents;
+    } else {
+      throw Exception('Failed to do anything');
+    }
+  }
 
-//  Future<http.Response> getUserCreds(int uid) async {
-  //  final response = await http.post(
-  //    Uri.parse('https://54sz8yaq55.execute-api.us-west-2.amazonaws.com/existingUserGetsCredits'),
-  //    body: jsonEncode({
-  //      "userID": 1,
-  //      "email": "tian@listeningpal.com",
-  //      "amount": 50,
-  //      "dateTime": 0,
-  //      "creditsToAdd": 1,
-  //      "stripeNotes": "from postman raw body"})
-  //  )
-  //  if (response.statusCode == 201) {
-  //   // If the server did return a 201 CREATED response,
-  //   // then parse the JSON.
-  //   return Album.fromJson(jsonDecode(response.body));
-  // } else {
-  //   // If the server did not return a 201 CREATED response,
-  //   // then throw an exception.
-  //   throw Exception('Failed to create album.');
-  // }
-
-  // }
-  List<Event> _getEventsfromDay(DateTime date) {
-    return selectedEvents[date] ?? [];
+  List<Album> _getEventsfromDay(DateTime selectedDay) {
+    return selectedEvents[selectedDay] ?? [];
   }
 
   @override
   void dispose() {
     super.dispose();
+  }
+
+  late Future<List<Album>> userAppts;
+
+  @override
+  void initState() {
+    super.initState();
+    userAppts = getUserAppts();
+    userAppts.then((userAppts) => {
+          for (var day in userAppts) {selectedEvents[day.stime]?.add(day)}
+        });
   }
 
   @override
@@ -134,7 +165,8 @@ class _TableBasicsState extends State<ApptPage> {
               //   ),
               // ),
               TextButton(
-                onPressed: () => launchURL('https://listeningpal.com/'),
+                onPressed: () => getUserAppts(),
+                // launchURL('https://listeningpal.com/')
                 child: Text(
                   'Account',
                   style: GoogleFonts.roboto(
@@ -226,52 +258,122 @@ class _TableBasicsState extends State<ApptPage> {
                                 fontSize: 24.0, color: Color(0xff41434D)),
                           ))),
                 ]),
-            _items[0],
-            _items.isNotEmpty
-                ? Expanded(
-                    child: SizedBox(
-                      height: 300.0,
-                      width: 300.0,
-                      child: TableCalendar(
-                        firstDay: DateTime(2022),
-                        lastDay: DateTime(2023),
-                        focusedDay: DateTime.utc(_focusedDay.year,
-                            _focusedDay.month, _focusedDay.day),
-                        calendarFormat: _calendarFormat,
-                        calendarStyle: CalendarStyle(
-                            todayDecoration: BoxDecoration(
-                                color: Color(0xff95D4D8),
-                                shape: BoxShape.circle)),
-                        selectedDayPredicate: (day) {
-                          return isSameDay(_selectedDay, day);
-                        },
-                        onDaySelected: (selectedDay, focusedDay) {
-                          setState(() {
-                            _selectedDay = selectedDay;
-                            _focusedDay = focusedDay;
-                          });
-                          showWidget = true;
-                          showDialog(
-                            context: context,
-                            builder: (BuildContext context) =>
-                                _buildPopupDialog(context),
-                          );
-                        },
-                        onFormatChanged: (format) {
-                          if (_calendarFormat != format) {
+            FutureBuilder<List<Album>>(
+                future: userAppts,
+                initialData: [
+                  Album(
+                      aid: 1,
+                      uid: 1,
+                      lid: 1,
+                      stime: DateTime.now(),
+                      etime: DateTime.now(),
+                      webRTC: 'whatever',
+                      creditsBefore: 3,
+                      creditsAfter: 2,
+                      canceled: 0,
+                      comp: 0)
+                ],
+                builder: (
+                  BuildContext context,
+                  AsyncSnapshot<List<Album>> snapshot,
+                ) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return (Expanded(
+                      child: SizedBox(
+                        height: 300.0,
+                        width: 300.0,
+                        child: TableCalendar(
+                          firstDay: DateTime(2022),
+                          lastDay: DateTime(2023),
+                          focusedDay: DateTime.utc(_focusedDay.year,
+                              _focusedDay.month, _focusedDay.day),
+                          calendarFormat: _calendarFormat,
+                          calendarStyle: CalendarStyle(
+                              todayDecoration: BoxDecoration(
+                                  color: Color(0xff95D4D8),
+                                  shape: BoxShape.circle)),
+                          selectedDayPredicate: (day) {
+                            return isSameDay(_selectedDay, day);
+                          },
+                          onDaySelected: (selectedDay, focusedDay) {
                             setState(() {
-                              _calendarFormat = format;
+                              _selectedDay = selectedDay;
+                              _focusedDay = focusedDay;
                             });
-                          }
-                        },
-                        onPageChanged: (focusedDay) {
-                          _focusedDay = focusedDay;
-                        },
-                        eventLoader: _getEventsfromDay,
+                            showWidget = true;
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) =>
+                                  _buildPopupDialog(context),
+                            );
+                          },
+                          onFormatChanged: (format) {
+                            if (_calendarFormat != format) {
+                              setState(() {
+                                _calendarFormat = format;
+                              });
+                            }
+                          },
+                          onPageChanged: (focusedDay) {
+                            _focusedDay = focusedDay;
+                          },
+                        ),
                       ),
-                    ),
-                  )
-                : Container(),
+                    ));
+                  }
+                  if (snapshot.connectionState == ConnectionState.done) {
+                    if (snapshot.hasError) {
+                      return const Text('Error');
+                    } else {
+                      return (Expanded(
+                        child: SizedBox(
+                          height: 300.0,
+                          width: 300.0,
+                          child: TableCalendar(
+                            firstDay: DateTime(2022),
+                            lastDay: DateTime(2023),
+                            focusedDay: DateTime.utc(_focusedDay.year,
+                                _focusedDay.month, _focusedDay.day),
+                            calendarFormat: _calendarFormat,
+                            calendarStyle: CalendarStyle(
+                                todayDecoration: BoxDecoration(
+                                    color: Color(0xff95D4D8),
+                                    shape: BoxShape.circle)),
+                            selectedDayPredicate: (day) {
+                              return isSameDay(_selectedDay, day);
+                            },
+                            onDaySelected: (selectedDay, focusedDay) {
+                              setState(() {
+                                _selectedDay = selectedDay;
+                                _focusedDay = focusedDay;
+                              });
+                              showWidget = true;
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) =>
+                                    _buildPopupDialog(context),
+                              );
+                            },
+                            onFormatChanged: (format) {
+                              if (_calendarFormat != format) {
+                                setState(() {
+                                  _calendarFormat = format;
+                                });
+                              }
+                            },
+                            onPageChanged: (focusedDay) {
+                              _focusedDay = focusedDay;
+                            },
+                            eventLoader: _getEventsfromDay,
+                          ),
+                        ),
+                      ));
+                    }
+                  }
+                  return Center(
+                    child: CircularProgressIndicator(),
+                  );
+                }),
             selectedEvents[DateTime.utc(_selectedDay.year, _selectedDay.month,
                         _selectedDay.day)] !=
                     null
@@ -292,7 +394,7 @@ class _TableBasicsState extends State<ApptPage> {
                       ..._getEventsfromDay(DateTime.utc(_selectedDay.year,
                               _selectedDay.month, _selectedDay.day))
                           .map(
-                        (Event event) => GestureDetector(
+                        (Album event) => GestureDetector(
                             onTap: () {
                               showDialog(
                                 context: context,
@@ -306,7 +408,7 @@ class _TableBasicsState extends State<ApptPage> {
                                   borderRadius: BorderRadius.circular(15.0)),
                               child: ListTile(
                                 title: Text(
-                                    event.title + ' at ' + event.sessionTime),
+                                    '$event.lid' + ' at ' + '$event.stime'),
                               ),
                             )),
                       )
@@ -399,7 +501,8 @@ class _TableBasicsState extends State<ApptPage> {
                                   Text(
                                       selectedEvents[_selectedDay]!
                                               .elementAt(0)
-                                              .sessionTime +
+                                              .stime
+                                              .toString() +
                                           ' on ' +
                                           DateFormat('MMMM dd, yyyy')
                                               .format(_selectedDay as DateTime),
@@ -423,7 +526,8 @@ class _TableBasicsState extends State<ApptPage> {
                                   Text(
                                       selectedEvents[_selectedDay]!
                                           .elementAt(0)
-                                          .title,
+                                          .lid
+                                          .toString(),
                                       style: GoogleFonts.roboto(
                                         textStyle:
                                             TextStyle(color: Colors.white),
@@ -713,16 +817,16 @@ class _TableBasicsState extends State<ApptPage> {
                             onPressed: (() => {
                                   if (selectedEvents[_selectedDay] != null)
                                     {
-                                      selectedEvents[_selectedDay as DateTime]
-                                          ?.add(
-                                        Event(selectedTime, 'Session with Sam'),
-                                      )
+                                      // selectedEvents[_selectedDay as DateTime]
+                                      //     ?.add(
+                                      //   // Album(selectedTime, 'Session with Sam'),
+                                      // )
                                     }
                                   else
                                     {
                                       selectedEvents[_selectedDay as DateTime] =
                                           [
-                                        Event(selectedTime, 'Session with Sam')
+                                        // Album(selectedTime, 'Session with Sam')
                                       ]
                                     },
                                   Navigator.pop(context),

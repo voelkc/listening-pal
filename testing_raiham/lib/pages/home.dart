@@ -1,8 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/intl.dart';
-import '../main.dart';
 import './onboarding.dart';
 import './resourcespage.dart';
 import './callpage.dart';
@@ -11,39 +9,12 @@ import './appointments.dart';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 
-Object body = {
-  "userID": 1
-};
-
+Object body = {"userID": 1};
 
 class UserData {
-  UserData({required this.userID});
+  UserData({required this.userID, required this.credits});
   final int userID;
-  int? credits;
-}
-getUserData() async {
-  print('trying');
-  final response = await http.post(
-      Uri.parse(
-          'https://54sz8yaq55.execute-api.us-west-2.amazonaws.com/getUserData'),
-      body: jsonEncode(body));
-  if (response.statusCode == 200) {
-    // If the server did return a 201 CREATED response,
-    // then parse the JSON.
-    // print('something happened');
-    // print('Response body: ${response.body}');
-
-    final jsonResponse = jsonDecode(response.body);
-    final data = jsonResponse['response'][0][0];
-    print(data);
-    print(data['CreditsAvailable']);
-
-
-  } else {
-    // If the server did not return a 201 CREATED response,
-    // then throw an exception.
-    throw Exception('Failed to create album.');
-  }
+  final int credits;
 }
 
 class HomePage extends StatefulWidget {
@@ -54,22 +25,52 @@ class HomePage extends StatefulWidget {
 class _HomePage extends State<HomePage> {
   final ApptPage appt = ApptPage();
   DateTime _selectedDay = DateTime.utc(2022, 3, 10);
+  UserData userData = UserData(userID: 1, credits: 0);
+  String creditStr = "";
   List<DateTime> apptDays = [
     DateTime.utc(2022, 3, 3),
     DateTime.utc(2022, 3, 10),
     DateTime.utc(2022, 3, 21),
     DateTime.utc(2022, 3, 25)
   ];
+
+  Future<UserData> getUserData() async {
+    print('trying');
+    final response = await http.post(
+        Uri.parse(
+            'https://54sz8yaq55.execute-api.us-west-2.amazonaws.com/getUserData'),
+        body: jsonEncode(body));
+    if (response.statusCode == 200) {
+      final jsonResponse = jsonDecode(response.body);
+      final data = jsonResponse['response'][0][0];
+      return new UserData(userID: 1, credits: data['CreditsAvailable']);
+    } else {
+      throw Exception('Failed to create album.');
+    }
+  }
+
   Map<DateTime, List<Event>> selectedEvents = {
     DateTime.utc(2022, 3, 3): [Event('3:30-4 PM', "Call with Jane")],
     DateTime.utc(2022, 3, 10): [Event('3:30-4 PM', "Call with Jane")],
     DateTime.utc(2022, 3, 21): [Event('1:30-2 PM', "Call with Toby")],
     DateTime.utc(2022, 3, 25): [Event('9-9:30 PM', "Call with Jane")],
   };
+
   String selectedSession = '';
 
   List<Event> _getEventsfromDay(DateTime date) {
     return selectedEvents[date] ?? [];
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // await getUserData();
+  }
+
+  void main() async {
+    userData = await getUserData();
+    print('${userData.credits}');
   }
 
   @override
@@ -81,8 +82,7 @@ class _HomePage extends State<HomePage> {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 TextButton(
-                  //onPressed: () => goToResources(context),
-                  onPressed: () => getUserData(),
+                  onPressed: () => goToResources(context),
                   child: Text(
                     'Resources',
                     style: GoogleFonts.roboto(
@@ -142,7 +142,7 @@ class _HomePage extends State<HomePage> {
                                               .bodyText2),
                                     ),
                                     TextSpan(
-                                        text: "5",
+                                        text: '${userData.credits}',
                                         style: GoogleFonts.roboto(
                                             textStyle: Theme.of(context)
                                                 .textTheme
@@ -733,9 +733,11 @@ class _HomePage extends State<HomePage> {
   void goToResources(context) => Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (_) => ResourcesPage()),
       );
-  void goToApptPage(context) => Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => ApptPage()),
-      );
+  void goToApptPage(context) {
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (_) => ApptPage()),
+    );
+  }
 }
 
 // Overlay Control stuff
