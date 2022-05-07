@@ -12,24 +12,32 @@ import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 
 Object body = {
-  "userID": 1,
-  "email": "tian@listeningpal.com",
-  "amount": 50,
-  "dateTime": 0,
-  "creditsToAdd": 1,
-  "stripeNotes": "from flutter with <3"
+  "userID": 1
 };
-getUserCreds() async {
+
+
+class UserData {
+  UserData({required this.userID});
+  final int userID;
+  int? credits;
+}
+getUserData() async {
   print('trying');
   final response = await http.post(
       Uri.parse(
-          'https://54sz8yaq55.execute-api.us-west-2.amazonaws.com/existingUserGetsCredits'),
+          'https://54sz8yaq55.execute-api.us-west-2.amazonaws.com/getUserData'),
       body: jsonEncode(body));
   if (response.statusCode == 200) {
     // If the server did return a 201 CREATED response,
     // then parse the JSON.
-    print('something happeneed');
-    print(response.body.toString());
+    // print('something happened');
+    // print('Response body: ${response.body}');
+
+    final jsonResponse = jsonDecode(response.body);
+    final data = jsonResponse['response'][0][0];
+    print(data);
+    print(data['CreditsAvailable']);
+
 
   } else {
     // If the server did not return a 201 CREATED response,
@@ -74,7 +82,7 @@ class _HomePage extends State<HomePage> {
               children: [
                 TextButton(
                   //onPressed: () => goToResources(context),
-                  onPressed: () => getUserCreds(),
+                  onPressed: () => getUserData(),
                   child: Text(
                     'Resources',
                     style: GoogleFonts.roboto(
