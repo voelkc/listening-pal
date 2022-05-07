@@ -11,53 +11,30 @@ import './appointments.dart';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 
-int creditsAvailRightNow = 0;
-Future<Album>? _futureAlbum;
-Object bodyToSend = {
+Object body = {
   "userID": 1,
   "email": "tian@listeningpal.com",
   "amount": 50,
   "dateTime": 0,
   "creditsToAdd": 1,
-  "stripeNotes": "from postman raw body"
+  "stripeNotes": "from flutter with <3"
 };
-Future<Album> getUserCreds(int uid) async {
+getUserCreds() async {
+  print('trying');
   final response = await http.post(
       Uri.parse(
           'https://54sz8yaq55.execute-api.us-west-2.amazonaws.com/existingUserGetsCredits'),
-      body: jsonEncode(bodyToSend));
-  if (response.statusCode == 201) {
+      body: jsonEncode(body));
+  if (response.statusCode == 200) {
     // If the server did return a 201 CREATED response,
     // then parse the JSON.
-    setState() {
-      creditsAvailRightNow =
-          Album.fromJSON(jsonDecode(response.body)).creditsAvail;
-    }
+    print('something happeneed');
+    print(response.body.toString());
 
-    return Album.fromJSON(jsonDecode(response.body));
   } else {
     // If the server did not return a 201 CREATED response,
     // then throw an exception.
     throw Exception('Failed to create album.');
-  }
-}
-
-class Album {
-  final int id;
-  final String email;
-  final int creditsAvail;
-  final int currSub;
-  const Album(
-      {required this.id,
-      required this.email,
-      required this.creditsAvail,
-      required this.currSub});
-  factory Album.fromJSON(Map<String, dynamic> json) {
-    return Album(
-        id: json['UserID'],
-        email: json['Email'],
-        creditsAvail: json['CreditsAvailable'],
-        currSub: json['CurrentlySubscribed']);
   }
 }
 
@@ -67,7 +44,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePage extends State<HomePage> {
-  Future<Album>? _futureAlbum;
   final ApptPage appt = ApptPage();
   DateTime _selectedDay = DateTime.utc(2022, 3, 10);
   List<DateTime> apptDays = [
@@ -97,7 +73,8 @@ class _HomePage extends State<HomePage> {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 TextButton(
-                  onPressed: () => goToResources(context),
+                  //onPressed: () => goToResources(context),
+                  onPressed: () => getUserCreds(),
                   child: Text(
                     'Resources',
                     style: GoogleFonts.roboto(
@@ -157,7 +134,7 @@ class _HomePage extends State<HomePage> {
                                               .bodyText2),
                                     ),
                                     TextSpan(
-                                        text: "$creditsAvailRightNow",
+                                        text: "5",
                                         style: GoogleFonts.roboto(
                                             textStyle: Theme.of(context)
                                                 .textTheme
@@ -1565,21 +1542,6 @@ class AppointmentDetailsOverlayView extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-
-  FutureBuilder<Album> buildFutureBuilder() {
-    return FutureBuilder<Album>(
-      future: _futureAlbum,
-      builder: (context, snapshot) {
-        if (snapshot.hasData) {
-          return Text(snapshot.data!.email);
-        } else if (snapshot.hasError) {
-          return Text('${snapshot.error}');
-        }
-
-        return const CircularProgressIndicator();
-      },
     );
   }
 }
