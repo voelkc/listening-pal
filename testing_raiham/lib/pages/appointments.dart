@@ -22,6 +22,28 @@ class ApptPage extends StatefulWidget {
   _TableBasicsState createState() => _TableBasicsState();
 }
 
+// "05/1103:30PM"
+availParser(String) {
+  var commaIndx = [];
+  var i = 0;
+  for (int i = 0; String.length; i++) {
+    if (String.indexOf(',') != -1) {
+      commaIndx.add(String.indexOf(','));
+    }
+  }
+  var x = "";
+  while (!commaIndx.contains(i) && i < String.length) {
+    x = String.substring(i, i + 5) +
+        "/2022 " +
+        String.substring(i + 5, i + 10) +
+        " " +
+        String.substring(i + 10, i + 12);
+    i += 12;
+  }
+  DateFormat format = new DateFormat("MM/dd/yyy hh:mm a");
+  return format.parse(x);
+}
+
 class Album {
   final int aid;
   final int uid;
@@ -50,8 +72,8 @@ class Album {
         aid: json['AppointmentID'],
         uid: json['UserID'],
         lid: json['ListenerID'],
-        stime: json['StartTime'],
-        etime: json['EndTime'],
+        stime: DateTime.parse(json['StartTime']),
+        etime: DateTime.parse(json['EndTime']),
         webRTC: json['WebRTCRoom'],
         creditsBefore: json['UserCreditsBefore'],
         creditsAfter: json['UserCreditsAfter'],
@@ -75,18 +97,15 @@ class _TableBasicsState extends State<ApptPage> {
   Map<DateTime, List<Album>> selectedEvents = {};
 
   String selectedSession = '';
-
-  Future<http.Response> createUserAppt() async {
-    print('trying');
-    final response = await http.post(
-        Uri.parse(
-            'https://54sz8yaq55.execute-api.us-west-2.amazonaws.com/getUserAppts'),
-        body: jsonEncode(body));
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body);
-    } else {
-      throw Exception('Failed to do anything');
-    }
+  @override
+  void initState() {
+    super.initState();
+    userAppts = getUserAppts();
+    final DateFormat formatter = DateFormat('YYYY-MM-dd');
+    userAppts.then((userAppts) => {
+          for (var day in userAppts)
+            {selectedEvents[formatter.format(day.stime)]?.add(day)}
+        });
   }
 
   Future<List<Album>> getUserAppts() async {
@@ -94,13 +113,54 @@ class _TableBasicsState extends State<ApptPage> {
     final response = await http.post(
         Uri.parse(
             'https://54sz8yaq55.execute-api.us-west-2.amazonaws.com/getUserAppts'),
-        body: jsonEncode(body));
+        body: jsonEncode(body),
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Accept": "application/json"
+        });
     if (response.statusCode == 200) {
-      final jsonResponse = jsonDecode(response.body);
-      final data = jsonResponse['response'][0][0];
-      print('wee woo');
-      List<Album> userEvents = data;
+      final jsonResponse = jsonDecode("[" + response.body + "]");
+      final data = jsonResponse[0]['response'][0] as List;
+      print(data);
+      List<Album> userEvents = [];
+      data.forEach((element) {
+        element = element as Map<String, dynamic>;
+        userEvents.add(Album.fromJSON(element));
+      });
+      setState(() {});
       return userEvents;
+    } else {
+      throw Exception('Failed to do anything');
+    }
+  }
+
+  Future<Album> createUserAppt(Object body) async {
+    final response = await http.post(
+        Uri.parse(
+            'https://54sz8yaq55.execute-api.us-west-2.amazonaws.com/userSchedulesCall'),
+        body: jsonEncode(body),
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Accept": "application/json"
+        });
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to do anything');
+    }
+  }
+
+  Future<Album> cancelUserAppt(Object body) async {
+    final response = await http.post(
+        Uri.parse(
+            'https://54sz8yaq55.execute-api.us-west-2.amazonaws.com/userCancelsCall'),
+        body: jsonEncode(body),
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Accept": "application/json"
+        });
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
     } else {
       throw Exception('Failed to do anything');
     }
@@ -116,15 +176,6 @@ class _TableBasicsState extends State<ApptPage> {
   }
 
   late Future<List<Album>> userAppts;
-
-  @override
-  void initState() {
-    super.initState();
-    userAppts = getUserAppts();
-    userAppts.then((userAppts) => {
-          for (var day in userAppts) {selectedEvents[day.stime]?.add(day)}
-        });
-  }
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -154,19 +205,8 @@ class _TableBasicsState extends State<ApptPage> {
                 ),
               ),
               const SizedBox(width: 60),
-              // TextButton(
-              //   onPressed: () => home.goToResources(context),
-              //   child: Text(
-              //     'Resources',
-              //     textAlign: TextAlign.right,
-              //     style: GoogleFonts.roboto(
-              //             textStyle: Theme.of(context).textTheme.bodyText1)
-              //         .copyWith(decoration: TextDecoration.none),
-              //   ),
-              // ),
               TextButton(
-                onPressed: () => getUserAppts(),
-                // launchURL('https://listeningpal.com/')
+                onPressed: () => launchURL('https://listeningpal.com/'),
                 child: Text(
                   'Account',
                   style: GoogleFonts.roboto(
@@ -258,8 +298,8 @@ class _TableBasicsState extends State<ApptPage> {
                                 fontSize: 24.0, color: Color(0xff41434D)),
                           ))),
                 ]),
-            FutureBuilder<List<Album>>(
-                future: userAppts,
+            FutureBuilder(
+                future: getUserAppts(),
                 initialData: [
                   Album(
                       aid: 1,
@@ -323,7 +363,7 @@ class _TableBasicsState extends State<ApptPage> {
                   }
                   if (snapshot.connectionState == ConnectionState.done) {
                     if (snapshot.hasError) {
-                      return const Text('Error');
+                      return Text('${snapshot.error}');
                     } else {
                       return (Expanded(
                         child: SizedBox(
@@ -370,9 +410,48 @@ class _TableBasicsState extends State<ApptPage> {
                       ));
                     }
                   }
-                  return Center(
-                    child: CircularProgressIndicator(),
-                  );
+                  return (Expanded(
+                    child: SizedBox(
+                      height: 300.0,
+                      width: 300.0,
+                      child: TableCalendar(
+                        firstDay: DateTime(2022),
+                        lastDay: DateTime(2023),
+                        focusedDay: DateTime.utc(_focusedDay.year,
+                            _focusedDay.month, _focusedDay.day),
+                        calendarFormat: _calendarFormat,
+                        calendarStyle: CalendarStyle(
+                            todayDecoration: BoxDecoration(
+                                color: Color(0xff95D4D8),
+                                shape: BoxShape.circle)),
+                        selectedDayPredicate: (day) {
+                          return isSameDay(_selectedDay, day);
+                        },
+                        onDaySelected: (selectedDay, focusedDay) {
+                          setState(() {
+                            _selectedDay = selectedDay;
+                            _focusedDay = focusedDay;
+                          });
+                          showWidget = true;
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) =>
+                                _buildPopupDialog(context),
+                          );
+                        },
+                        onFormatChanged: (format) {
+                          if (_calendarFormat != format) {
+                            setState(() {
+                              _calendarFormat = format;
+                            });
+                          }
+                        },
+                        onPageChanged: (focusedDay) {
+                          _focusedDay = focusedDay;
+                        },
+                      ),
+                    ),
+                  ));
                 }),
             selectedEvents[DateTime.utc(_selectedDay.year, _selectedDay.month,
                         _selectedDay.day)] !=
@@ -607,7 +686,39 @@ class _TableBasicsState extends State<ApptPage> {
   Widget _buildPopupDialog(
     BuildContext context,
   ) {
-    var times = ['3-3:30pm', '3:30-4pm', '4-4:30pm'];
+    List<String> times = [];
+    selectedEvents[_selectedDay]?.forEach((element) {
+      times.add(DateFormat.Hm(element.stime).toString());
+    });
+    String? selectedTime = "";
+    List<Widget> temp = [];
+    for (var i = 1; i < times.length; i++) {
+      temp.add(
+        ElevatedButton(
+          child: Text(times[0],
+              style: GoogleFonts.roboto(
+                  textStyle: TextStyle(color: Colors.black))),
+          style: ButtonStyle(
+              textStyle: MaterialStateProperty.all<TextStyle>(
+                  GoogleFonts.roboto(
+                      textStyle:
+                          TextStyle(color: Colors.black, fontSize: 11.0))),
+              elevation: MaterialStateProperty.all<double>(0),
+              backgroundColor:
+                  MaterialStateProperty.all<Color>(Color(0xff95D4D8)),
+              maximumSize: MaterialStateProperty.all<Size>(
+                  Size(MediaQuery.of(context).size.width * 0.2, 40)),
+              shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                  RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(18.0),
+              ))),
+          onPressed: (() => setState(() {
+                timeClicked = !timeClicked;
+                selectedTime = times[0];
+              })),
+        ),
+      );
+    }
     return StatefulBuilder(
       builder: (context, setState) => AlertDialog(
           backgroundColor: Color(0xff41434D),
@@ -712,84 +823,24 @@ class _TableBasicsState extends State<ApptPage> {
                                       ))
                                 ])
                               ])
-                        : ElevatedButton(
-                            child: Text(times[0],
+                        : DropdownButton<String>(
+                            hint: Text("Please select a time",
                                 style: GoogleFonts.roboto(
-                                    textStyle: TextStyle(color: Colors.black))),
-                            style: ButtonStyle(
-                                textStyle: MaterialStateProperty.all<TextStyle>(
-                                    GoogleFonts.roboto(
-                                        textStyle: TextStyle(
-                                            color: Colors.black,
-                                            fontSize: 11.0))),
-                                elevation: MaterialStateProperty.all<double>(0),
-                                backgroundColor:
-                                    MaterialStateProperty.all<Color>(
-                                        Color(0xff95D4D8)),
-                                maximumSize: MaterialStateProperty.all<Size>(
-                                    Size(
-                                        MediaQuery.of(context).size.width * 0.2,
-                                        40)),
-                                shape: MaterialStateProperty.all<
-                                        RoundedRectangleBorder>(
-                                    RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(18.0),
-                                ))),
-                            onPressed: (() => setState(() {
-                                  timeClicked = !timeClicked;
-                                  selectedTime = times[0];
-                                })),
+                                  textStyle: TextStyle(color: Colors.white),
+                                )),
+                            value: selectedTime,
+                            items: times.map((String value) {
+                              return DropdownMenuItem<String>(
+                                value: value,
+                                child: Text(value),
+                              );
+                            }).toList(),
+                            onChanged: (newValue) {
+                              setState(() {
+                                selectedTime = newValue;
+                              });
+                            },
                           ),
-                    Visibility(
-                      visible: timeClicked == false,
-                      child: ElevatedButton(
-                          child: Text(times[1],
-                              style: GoogleFonts.roboto(
-                                  textStyle: TextStyle(color: Colors.black))),
-                          style: ButtonStyle(
-                              textStyle: MaterialStateProperty.all<TextStyle>(
-                                  GoogleFonts.roboto(
-                                      textStyle: TextStyle(
-                                          color: Colors.black,
-                                          fontSize: 11.0))),
-                              elevation: MaterialStateProperty.all<double>(0),
-                              backgroundColor: MaterialStateProperty.all<Color>(
-                                  Color(0xff95D4D8)),
-                              maximumSize: MaterialStateProperty.all<Size>(Size(
-                                  MediaQuery.of(context).size.width * 0.2, 40)),
-                              shape: MaterialStateProperty.all<
-                                      RoundedRectangleBorder>(
-                                  RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(18.0),
-                              ))),
-                          onPressed: (() => setState(() {
-                                timeClicked = !timeClicked;
-                                selectedTime = times[0];
-                              }))),
-                    ),
-                    Visibility(
-                      visible: timeClicked == false,
-                      child: ElevatedButton(
-                        child: Text(times[2],
-                            style: GoogleFonts.roboto(
-                                textStyle: TextStyle(color: Colors.black))),
-                        style: ButtonStyle(
-                            textStyle: MaterialStateProperty.all<TextStyle>(
-                                GoogleFonts.roboto(
-                                    textStyle: TextStyle(
-                                        color: Colors.black, fontSize: 11.0))),
-                            elevation: MaterialStateProperty.all<double>(0),
-                            backgroundColor: MaterialStateProperty.all<Color>(
-                                Color(0xff808080)),
-                            maximumSize: MaterialStateProperty.all<Size>(Size(
-                                MediaQuery.of(context).size.width * 0.2, 40)),
-                            shape: MaterialStateProperty.all<
-                                RoundedRectangleBorder>(RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(18.0),
-                            ))),
-                        onPressed: (() => null),
-                      ),
-                    ),
                   ],
                 ),
                 Row(
@@ -815,24 +866,22 @@ class _TableBasicsState extends State<ApptPage> {
                                   borderRadius: BorderRadius.circular(22.0),
                                 ))),
                             onPressed: (() => {
-                                  if (selectedEvents[_selectedDay] != null)
-                                    {
-                                      // selectedEvents[_selectedDay as DateTime]
-                                      //     ?.add(
-                                      //   // Album(selectedTime, 'Session with Sam'),
-                                      // )
-                                    }
-                                  else
-                                    {
-                                      selectedEvents[_selectedDay as DateTime] =
-                                          [
-                                        // Album(selectedTime, 'Session with Sam')
-                                      ]
-                                    },
+                                  // if (selectedEvents[_selectedDay] == null)
+                                  //   {
+                                  createUserAppt(
+                                      {"userID": 1, "StartTime": selectedTime}),
+                                  // },
+                                  // else
+                                  //   {
+                                  //     selectedEvents[_selectedDay as DateTime] =
+                                  //         [
+                                  //       // Album(selectedTime, 'Session with Sam')
+                                  //     ]
+                                  //   },
+                                  getUserAppts(),
                                   Navigator.pop(context),
                                   selectedTime = "",
                                   timeClicked = false,
-                                  goToUpdatedAppt(context)
                                 }),
                             // ),
                           )),
