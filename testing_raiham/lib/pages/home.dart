@@ -5,11 +5,51 @@ import './onboarding.dart';
 import './resourcespage.dart';
 import './callpage.dart';
 import 'dart:convert';
+import 'package:intl/intl.dart';
+
 import './appointments.dart';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 
 Object body = {"userID": 1};
+
+class Appt {
+  final int aid;
+  final int uid;
+  final int lid;
+  final DateTime stime;
+  final DateTime etime;
+  final String webRTC;
+  final int creditsBefore;
+  final int creditsAfter;
+  final int canceled;
+  final int comp;
+
+  const Appt(
+      {required this.aid,
+      required this.uid,
+      required this.lid,
+      required this.stime,
+      required this.etime,
+      required this.webRTC,
+      required this.creditsBefore,
+      required this.creditsAfter,
+      required this.canceled,
+      required this.comp});
+  factory Appt.fromJSON(Map<String, dynamic> json) {
+    return Appt(
+        aid: json['AppointmentID'],
+        uid: json['UserID'],
+        lid: json['ListenerID'],
+        stime: DateTime.parse(json['StartTime']),
+        etime: DateTime.parse(json['EndTime']),
+        webRTC: json['WebRTCRoom'],
+        creditsBefore: json['UserCreditsBefore'],
+        creditsAfter: json['UserCreditsAfter'],
+        canceled: json['Canceled'],
+        comp: json['Completed']);
+  }
+}
 
 class UserData {
   UserData({required this.userID, required this.credits});
@@ -34,44 +74,52 @@ class _HomePage extends State<HomePage> {
     DateTime.utc(2022, 3, 25)
   ];
 
-  Future<UserData> getUserData() async {
+  late Future<List<Appt>> userAppts;
+  Future<List<Appt>> getUserAppts() async {
     print('trying');
     final response = await http.post(
         Uri.parse(
-            'https://54sz8yaq55.execute-api.us-west-2.amazonaws.com/getUserData'),
-        body: jsonEncode(body));
+            'https://54sz8yaq55.execute-api.us-west-2.amazonaws.com/getUserAppts'),
+        body: jsonEncode(body),
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Accept": "application/json"
+        });
     if (response.statusCode == 200) {
-      final jsonResponse = jsonDecode(response.body);
-      final data = jsonResponse['response'][0][0];
-      return new UserData(userID: 1, credits: data['CreditsAvailable']);
+      final jsonResponse = jsonDecode("[" + response.body + "]");
+      final data = jsonResponse[0]['response'][0] as List;
+      print(data);
+      List<Appt> userEvents = [];
+      data.forEach((element) {
+        element = element as Map<String, dynamic>;
+        userEvents.add(Appt.fromJSON(element));
+      });
+
+      return userEvents;
     } else {
-      throw Exception('Failed to create album.');
+      throw Exception('Failed to do anything');
     }
   }
 
-  Map<DateTime, List<Event>> selectedEvents = {
-    DateTime.utc(2022, 3, 3): [Event('3:30-4 PM', "Call with Jane")],
-    DateTime.utc(2022, 3, 10): [Event('3:30-4 PM', "Call with Jane")],
-    DateTime.utc(2022, 3, 21): [Event('1:30-2 PM', "Call with Toby")],
-    DateTime.utc(2022, 3, 25): [Event('9-9:30 PM', "Call with Jane")],
-  };
+  Map<DateTime, List<Appt>> selectedEvents = {};
 
   String selectedSession = '';
 
-  List<Event> _getEventsfromDay(DateTime date) {
+  List<Appt> _getEventsfromDay(DateTime date) {
     return selectedEvents[date] ?? [];
   }
 
   @override
   void initState() {
     super.initState();
-    // await getUserData();
+    userAppts = getUserAppts();
+    final DateFormat formatter = DateFormat('YYYY-MM-dd');
+    userAppts.then((userAppts) => {
+          for (var day in userAppts) {selectedEvents[(day.stime)]?.add(day)}
+        });
   }
 
-  void main() async {
-    userData = await getUserData();
-    print('${userData.credits}');
-  }
+  void main() async {}
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -350,6 +398,33 @@ class _HomePage extends State<HomePage> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
+                                FutureBuilder<List<Appt>>(
+                                    future: userAppts,
+                                    builder: (
+                                      BuildContext context,
+                                      AsyncSnapshot<List<Appt>> snapshot,
+                                    ) {
+                                      if (snapshot.connectionState ==
+                                          ConnectionState.waiting) {
+                                        return CircularProgressIndicator();
+                                      } else if (snapshot.connectionState ==
+                                          ConnectionState.done) {
+                                        if (snapshot.hasError) {
+                                          return Text('${snapshot.error}');
+                                        } else if (snapshot.hasData) {
+                                          String days = "";
+                                          snapshot.data?.forEach(((element) =>
+                                              days = days +
+                                                  element.stime.toString()));
+                                          return Text(days);
+                                        } else {
+                                          return Text('Empty data');
+                                        }
+                                      } else {
+                                        return Text(
+                                            'State: ${snapshot.connectionState}');
+                                      }
+                                    }),
                                 Text(
                                   'This Month',
                                   //style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
@@ -454,7 +529,7 @@ class _HomePage extends State<HomePage> {
                                                     CrossAxisAlignment.start,
                                                 children: [
                                                   Text(
-                                                    'Call with Jane',
+                                                    'Call with Listener',
                                                     style: GoogleFonts.roboto(
                                                       textStyle:
                                                           Theme.of(context)
@@ -555,7 +630,7 @@ class _HomePage extends State<HomePage> {
                                                     CrossAxisAlignment.start,
                                                 children: [
                                                   Text(
-                                                    'Call with Toby',
+                                                    'Call with Listener',
                                                     style: GoogleFonts.roboto(
                                                       textStyle:
                                                           Theme.of(context)
@@ -656,7 +731,7 @@ class _HomePage extends State<HomePage> {
                                                     CrossAxisAlignment.start,
                                                 children: [
                                                   Text(
-                                                    'Call with Jane',
+                                                    'Call with Listener',
                                                     style: GoogleFonts.roboto(
                                                       textStyle:
                                                           Theme.of(context)

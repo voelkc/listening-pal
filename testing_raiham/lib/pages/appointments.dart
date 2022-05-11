@@ -44,7 +44,7 @@ availParser(String) {
   return format.parse(x);
 }
 
-class Album {
+class Appt {
   final int aid;
   final int uid;
   final int lid;
@@ -56,7 +56,7 @@ class Album {
   final int canceled;
   final int comp;
 
-  const Album(
+  const Appt(
       {required this.aid,
       required this.uid,
       required this.lid,
@@ -67,8 +67,8 @@ class Album {
       required this.creditsAfter,
       required this.canceled,
       required this.comp});
-  factory Album.fromJSON(Map<String, dynamic> json) {
-    return Album(
+  factory Appt.fromJSON(Map<String, dynamic> json) {
+    return Appt(
         aid: json['AppointmentID'],
         uid: json['UserID'],
         lid: json['ListenerID'],
@@ -92,9 +92,8 @@ class _TableBasicsState extends State<ApptPage> {
   bool timeClicked = false;
   bool cancelClicked = false;
   String selectedTime = "";
-  List _items = [];
 
-  Map<DateTime, List<Album>> selectedEvents = {};
+  Map<DateTime, List<Appt>> selectedEvents = {};
 
   String selectedSession = '';
   @override
@@ -103,12 +102,11 @@ class _TableBasicsState extends State<ApptPage> {
     userAppts = getUserAppts();
     final DateFormat formatter = DateFormat('YYYY-MM-dd');
     userAppts.then((userAppts) => {
-          for (var day in userAppts)
-            {selectedEvents[formatter.format(day.stime)]?.add(day)}
+          for (var day in userAppts) {selectedEvents[(day.stime)]?.add(day)}
         });
   }
 
-  Future<List<Album>> getUserAppts() async {
+  Future<List<Appt>> getUserAppts() async {
     print('trying');
     final response = await http.post(
         Uri.parse(
@@ -122,19 +120,42 @@ class _TableBasicsState extends State<ApptPage> {
       final jsonResponse = jsonDecode("[" + response.body + "]");
       final data = jsonResponse[0]['response'][0] as List;
       print(data);
-      List<Album> userEvents = [];
+      List<Appt> userEvents = [];
       data.forEach((element) {
         element = element as Map<String, dynamic>;
-        userEvents.add(Album.fromJSON(element));
+        userEvents.add(Appt.fromJSON(element));
       });
-      setState(() {});
+      userEvents.forEach((element) {
+        setState(() {
+          selectedEvents[element.stime]?.add(element);
+        });
+      });
+
       return userEvents;
     } else {
       throw Exception('Failed to do anything');
     }
   }
 
-  Future<Album> createUserAppt(Object body) async {
+  Future<Appt> createUserAppt(Object body) async {
+    final response = await http.post(
+        Uri.parse(
+            'https://54sz8yaq55.execute-api.us-west-2.amazonaws.com/userSchedulesCall'),
+        body: jsonEncode(body),
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Accept": "application/json"
+        });
+
+    if (response.statusCode == 200) {
+      setState(() {});
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to do anything');
+    }
+  }
+
+  Future<Appt> cancelUserAppt(Object body) async {
     final response = await http.post(
         Uri.parse(
             'https://54sz8yaq55.execute-api.us-west-2.amazonaws.com/userSchedulesCall'),
@@ -150,32 +171,16 @@ class _TableBasicsState extends State<ApptPage> {
     }
   }
 
-  Future<Album> cancelUserAppt(Object body) async {
-    final response = await http.post(
-        Uri.parse(
-            'https://54sz8yaq55.execute-api.us-west-2.amazonaws.com/userCancelsCall'),
-        body: jsonEncode(body),
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Accept": "application/json"
-        });
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body);
-    } else {
-      throw Exception('Failed to do anything');
-    }
-  }
-
-  List<Album> _getEventsfromDay(DateTime selectedDay) {
-    return selectedEvents[selectedDay] ?? [];
-  }
+  // Future<List<Appt>> _getEventsfromDay(DateTime selectedDay) {
+  //   return selectedEvents.then((value) => value[selectedDay] ?? []);
+  // }
 
   @override
   void dispose() {
     super.dispose();
   }
 
-  late Future<List<Album>> userAppts;
+  late Future<List<Appt>> userAppts;
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -298,10 +303,10 @@ class _TableBasicsState extends State<ApptPage> {
                                 fontSize: 24.0, color: Color(0xff41434D)),
                           ))),
                 ]),
-            FutureBuilder(
-                future: getUserAppts(),
+            FutureBuilder<List<Appt>>(
+                future: userAppts,
                 initialData: [
-                  Album(
+                  Appt(
                       aid: 1,
                       uid: 1,
                       lid: 1,
@@ -315,7 +320,7 @@ class _TableBasicsState extends State<ApptPage> {
                 ],
                 builder: (
                   BuildContext context,
-                  AsyncSnapshot<List<Album>> snapshot,
+                  AsyncSnapshot<List<Appt>> snapshot,
                 ) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return (Expanded(
@@ -404,7 +409,7 @@ class _TableBasicsState extends State<ApptPage> {
                             onPageChanged: (focusedDay) {
                               _focusedDay = focusedDay;
                             },
-                            eventLoader: _getEventsfromDay,
+                            // eventLoader: (day) {return _getEventsfromDay(_selectedDay)},
                           ),
                         ),
                       ));
@@ -469,29 +474,30 @@ class _TableBasicsState extends State<ApptPage> {
                         : Key("0"),
                     padding: EdgeInsets.all(8),
                     shrinkWrap: true,
-                    children: [
-                      ..._getEventsfromDay(DateTime.utc(_selectedDay.year,
-                              _selectedDay.month, _selectedDay.day))
-                          .map(
-                        (Album event) => GestureDetector(
-                            onTap: () {
-                              showDialog(
-                                context: context,
-                                builder: (BuildContext context) =>
-                                    buildEditCallPopup(context),
-                              );
-                            },
-                            child: Card(
-                              shape: RoundedRectangleBorder(
-                                  side: BorderSide(color: Colors.grey),
-                                  borderRadius: BorderRadius.circular(15.0)),
-                              child: ListTile(
-                                title: Text(
-                                    '$event.lid' + ' at ' + '$event.stime'),
-                              ),
-                            )),
-                      )
-                    ],
+                    // children:
+                    // [
+                    //   ..._getEventsfromDay(DateTime.utc(_selectedDay.year,
+                    //           _selectedDay.month, _selectedDay.day))
+                    //       .map(
+                    //     (Appt event) => GestureDetector(
+                    //         onTap: () {
+                    //           showDialog(
+                    //             context: context,
+                    //             builder: (BuildContext context) =>
+                    //                 buildEditCallPopup(context),
+                    //           );
+                    //         },
+                    //         child: Card(
+                    //           shape: RoundedRectangleBorder(
+                    //               side: BorderSide(color: Colors.grey),
+                    //               borderRadius: BorderRadius.circular(15.0)),
+                    //           child: ListTile(
+                    //             title: Text(
+                    //                 '$event.lid' + ' at ' + '$event.stime'),
+                    //           ),
+                    //         )),
+                    //   )
+                    // ],
                   )
                 : Text('No events',
                     style: GoogleFonts.roboto(
@@ -875,7 +881,7 @@ class _TableBasicsState extends State<ApptPage> {
                                   //   {
                                   //     selectedEvents[_selectedDay as DateTime] =
                                   //         [
-                                  //       // Album(selectedTime, 'Session with Sam')
+                                  //       // Appt(selectedTime, 'Session with Sam')
                                   //     ]
                                   //   },
                                   getUserAppts(),
