@@ -102,7 +102,8 @@ class _TableBasicsState extends State<ApptPage> {
     userAppts = getUserAppts();
     final DateFormat formatter = DateFormat('YYYY-MM-dd');
     userAppts.then((userAppts) => {
-          for (var day in userAppts) {selectedEvents[(day.stime)]?.add(day)}
+          for (var day in userAppts)
+            {selectedEvents[formatter.format(day.stime)]?.add(day)}
         });
   }
 
@@ -117,17 +118,19 @@ class _TableBasicsState extends State<ApptPage> {
           "Accept": "application/json"
         });
     if (response.statusCode == 200) {
-      final jsonResponse = jsonDecode("[" + response.body + "]");
-      final data = jsonResponse[0]['response'][0] as List;
-      print(data);
+      final jsonResponse = jsonDecode(response.body);
+      final data = jsonResponse['response'][0][0];
+      // print(data);
       List<Appt> userEvents = [];
       data.forEach((element) {
         element = element as Map<String, dynamic>;
         userEvents.add(Appt.fromJSON(element));
       });
+      final DateFormat formatter = DateFormat('YYYY-MM-dd');
+
       userEvents.forEach((element) {
         setState(() {
-          selectedEvents[element.stime]?.add(element);
+          selectedEvents[formatter.format(element.stime)]?.add(element);
         });
       });
 
@@ -171,9 +174,10 @@ class _TableBasicsState extends State<ApptPage> {
     }
   }
 
-  // Future<List<Appt>> _getEventsfromDay(DateTime selectedDay) {
-  //   return selectedEvents.then((value) => value[selectedDay] ?? []);
-  // }
+  List<Appt> _getEventsfromDay(DateTime selectedDay) {
+    getUserAppts();
+    return selectedEvents[selectedDay] ?? [];
+  }
 
   @override
   void dispose() {
@@ -305,19 +309,6 @@ class _TableBasicsState extends State<ApptPage> {
                 ]),
             FutureBuilder<List<Appt>>(
                 future: userAppts,
-                initialData: [
-                  Appt(
-                      aid: 1,
-                      uid: 1,
-                      lid: 1,
-                      stime: DateTime.now(),
-                      etime: DateTime.now(),
-                      webRTC: 'whatever',
-                      creditsBefore: 3,
-                      creditsAfter: 2,
-                      canceled: 0,
-                      comp: 0)
-                ],
                 builder: (
                   BuildContext context,
                   AsyncSnapshot<List<Appt>> snapshot,
@@ -369,50 +360,51 @@ class _TableBasicsState extends State<ApptPage> {
                   if (snapshot.connectionState == ConnectionState.done) {
                     if (snapshot.hasError) {
                       return Text('${snapshot.error}');
-                    } else {
+                    } else if (snapshot.hasData) {
                       return (Expanded(
                         child: SizedBox(
                           height: 300.0,
                           width: 300.0,
                           child: TableCalendar(
-                            firstDay: DateTime(2022),
-                            lastDay: DateTime(2023),
-                            focusedDay: DateTime.utc(_focusedDay.year,
-                                _focusedDay.month, _focusedDay.day),
-                            calendarFormat: _calendarFormat,
-                            calendarStyle: CalendarStyle(
-                                todayDecoration: BoxDecoration(
-                                    color: Color(0xff95D4D8),
-                                    shape: BoxShape.circle)),
-                            selectedDayPredicate: (day) {
-                              return isSameDay(_selectedDay, day);
-                            },
-                            onDaySelected: (selectedDay, focusedDay) {
-                              setState(() {
-                                _selectedDay = selectedDay;
-                                _focusedDay = focusedDay;
-                              });
-                              showWidget = true;
-                              showDialog(
-                                context: context,
-                                builder: (BuildContext context) =>
-                                    _buildPopupDialog(context),
-                              );
-                            },
-                            onFormatChanged: (format) {
-                              if (_calendarFormat != format) {
+                              firstDay: DateTime(2022),
+                              lastDay: DateTime(2023),
+                              focusedDay: DateTime.utc(_focusedDay.year,
+                                  _focusedDay.month, _focusedDay.day),
+                              calendarFormat: _calendarFormat,
+                              calendarStyle: CalendarStyle(
+                                  todayDecoration: BoxDecoration(
+                                      color: Color(0xff95D4D8),
+                                      shape: BoxShape.circle)),
+                              selectedDayPredicate: (day) {
+                                return isSameDay(_selectedDay, day);
+                              },
+                              onDaySelected: (selectedDay, focusedDay) {
                                 setState(() {
-                                  _calendarFormat = format;
+                                  _selectedDay = selectedDay;
+                                  _focusedDay = focusedDay;
                                 });
-                              }
-                            },
-                            onPageChanged: (focusedDay) {
-                              _focusedDay = focusedDay;
-                            },
-                            // eventLoader: (day) {return _getEventsfromDay(_selectedDay)},
-                          ),
+                                showWidget = true;
+                                showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) =>
+                                      _buildPopupDialog(context),
+                                );
+                              },
+                              onFormatChanged: (format) {
+                                if (_calendarFormat != format) {
+                                  setState(() {
+                                    _calendarFormat = format;
+                                  });
+                                }
+                              },
+                              onPageChanged: (focusedDay) {
+                                _focusedDay = focusedDay;
+                              },
+                              eventLoader: _getEventsfromDay),
                         ),
                       ));
+                    } else {
+                      return Text('${snapshot.connectionState}');
                     }
                   }
                   return (Expanded(
