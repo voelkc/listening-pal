@@ -268,59 +268,6 @@ class _HomePage extends State<HomePage> {
                           mainAxisAlignment: MainAxisAlignment.start,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              'Today',
-                              //style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
-                              style: GoogleFonts.dongle(
-                                  textStyle:
-                                      Theme.of(context).textTheme.headline1),
-                            ),
-                            // NO APPOINTMENTS TEXT BEGINNING
-                            // Text(
-                            //   'No appointments scheduled today',
-                            //   //style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
-                            //   style: GoogleFonts.roboto(
-                            //       textStyle:
-                            //       Theme.of(context).textTheme.bodyText2),
-                            // ),
-                            // NO APPOINTMENTS TEXT END
-                          ],
-                        ),
-                      ],
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Flex(
-                              direction: Axis.horizontal,
-                              mainAxisSize: MainAxisSize.max,
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Text(
-                                  'This Month',
-                                  //style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
-                                  style: GoogleFonts.dongle(
-                                      textStyle: Theme.of(context)
-                                          .textTheme
-                                          .headline1),
-                                ),
-                                const Padding(
-                                  padding: EdgeInsets.fromLTRB(120, 0, 0, 0),
-                                  child: Icon(
-                                    Icons.calendar_month_rounded,
-                                    color: Color(0xff41434D),
-                                    size: 30.0,
-                                    semanticLabel:
-                                        'Text to announce in accessibility modes',
-                                  ),
-                                )
-                              ],
-                            ),
                             FutureBuilder<List<Appt>>(
                                 future: userAppts,
                                 builder: (
@@ -442,7 +389,7 @@ class _HomePage extends State<HomePage> {
                                                             size: 30.0,
                                                             // textDirection: TextDirection.RTL,
                                                             semanticLabel:
-                                                            'Text to announce in accessibility modes',
+                                                            'Call icon',
                                                           ),
                                                         ],
                                                       )),
@@ -563,13 +510,63 @@ class _HomePage extends State<HomePage> {
 
                                       // days = days +
                                       //     element.aid.toString()));
-                                        return  Column(
-                                          mainAxisAlignment:
-                                          MainAxisAlignment.start,
-                                          crossAxisAlignment:
-                                          CrossAxisAlignment.end,
-                                          children: monthAppointmentWidgets,
-                                        );
+                                        return
+                                          Column(
+                                            mainAxisAlignment: MainAxisAlignment.start,
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Row(
+                                                mainAxisAlignment: MainAxisAlignment.start,
+                                                children: [
+                                                  Column(
+                                                    mainAxisAlignment: MainAxisAlignment.start,
+                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                    children: [
+                                                      Text(
+                                                        'Today',
+                                                        //style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
+                                                        style: GoogleFonts.dongle(
+                                                            textStyle:
+                                                            Theme.of(context).textTheme.headline1),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ],
+                                              ),
+                                              ...todayAppointmentWidgets,
+                                              Flex(
+                                                direction: Axis.horizontal,
+                                                mainAxisSize: MainAxisSize.max,
+                                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                crossAxisAlignment: CrossAxisAlignment.center,
+                                                children: [
+                                                  Text(
+                                                    'This Month',
+                                                    //style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
+                                                    style: GoogleFonts.dongle(
+                                                        textStyle: Theme.of(context)
+                                                            .textTheme
+                                                            .headline1),
+                                                  ),
+                                                  const Padding(
+                                                    padding: EdgeInsets.fromLTRB(120, 0, 0, 0),
+                                                    child: Icon(
+                                                      Icons.calendar_month_rounded,
+                                                      color: Color(0xff41434D),
+                                                      size: 30.0,
+                                                      semanticLabel:
+                                                      'Text to announce in accessibility modes',
+                                                    ),
+                                                  )
+                                                ],
+                                              ),
+                                            Column(
+                                            mainAxisAlignment: MainAxisAlignment.start,
+                                            crossAxisAlignment: CrossAxisAlignment.end,
+                                            children: monthAppointmentWidgets,
+                                          )
+                                            ],
+                                          );
                                     } else {
                                       return Text('Empty data');
                                     }
