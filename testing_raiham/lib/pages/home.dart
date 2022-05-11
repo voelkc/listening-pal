@@ -284,8 +284,8 @@ class _HomePage extends State<HomePage> {
                                     } else if (snapshot.hasData) {
                                       List<Widget> monthAppointmentWidgets = [];
                                       List<Widget> todayAppointmentWidgets = [];
-                                      List<String> weekdays = ['MON', 'TUE' 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
-                                      List<String> months = ['January', 'February' 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+                                      List<String> weekdays = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
+                                      List<String> months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
                                       final now = DateTime.now();
                                       snapshot.data?.forEach(((appointment) => {
                                         if(appointment.stime.day == now.day && appointment.stime.month == now.month){ // if appointment is for today
@@ -346,7 +346,7 @@ class _HomePage extends State<HomePage> {
                                                                   color:
                                                                   Color(0xff95D4D8))))),
                                                       onPressed: () => _presentJoinOverlay(
-                                                          '${appointment.pseudonym}|${months[appointment.stime.month]} ${appointment.stime.day}, ${appointment.stime.year}|${appointment.stime.hour}:${appointment.stime.minute} - ${appointment.etime.hour}:${appointment.etime.minute}'),
+                                                          '${appointment.pseudonym}|${months[appointment.stime.month - 1]} ${appointment.stime.day}, ${appointment.stime.year}|${appointment.stime.hour}:${appointment.stime.minute} - ${appointment.etime.hour}:${appointment.etime.minute}'),
                                                       child: Row(
                                                         mainAxisAlignment:
                                                         MainAxisAlignment.spaceBetween,
@@ -454,7 +454,7 @@ class _HomePage extends State<HomePage> {
                                                                   ))),
                                                           onPressed: () =>
                                                               _presentAppointmentDetailsOverlay(
-                                                                  '${appointment.pseudonym}|${months[appointment.stime.month]} ${appointment.stime.day}, ${appointment.stime.year}|${appointment.stime.hour}:${appointment.stime.minute} - ${appointment.etime.hour}:${appointment.etime.minute}'),
+                                                                  '${appointment.pseudonym}|${months[appointment.stime.month - 1]} ${appointment.stime.day}, ${appointment.stime.year}|${appointment.stime.hour}:${appointment.stime.minute} - ${appointment.etime.hour}:${appointment.etime.minute}'),
                                                           child: Row(
                                                             mainAxisAlignment:
                                                             MainAxisAlignment.spaceBetween,
