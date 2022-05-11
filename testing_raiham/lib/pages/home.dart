@@ -76,7 +76,7 @@ class _HomePage extends State<HomePage> {
 
   late Future<List<Appt>> userAppts;
   Future<List<Appt>> getUserAppts() async {
-    print('trying');
+    print('fetching appointments');
     final response = await http.post(
         Uri.parse(
             'https://54sz8yaq55.execute-api.us-west-2.amazonaws.com/getUserAppts'),
@@ -86,6 +86,7 @@ class _HomePage extends State<HomePage> {
           "Accept": "application/json"
         });
     if (response.statusCode == 200) {
+      print('received appointments:');
       final jsonResponse = jsonDecode("[" + response.body + "]");
       final data = jsonResponse[0]['response'][0] as List;
       print(data);
