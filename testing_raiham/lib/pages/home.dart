@@ -24,6 +24,7 @@ class Appt {
   final int creditsAfter;
   final int canceled;
   final int comp;
+  final String pseudonym;
 
   const Appt(
       {required this.aid,
@@ -35,7 +36,8 @@ class Appt {
       required this.creditsBefore,
       required this.creditsAfter,
       required this.canceled,
-      required this.comp});
+      required this.comp,
+      required this.pseudonym});
   factory Appt.fromJSON(Map<String, dynamic> json) {
     return Appt(
         aid: json['AppointmentID'],
@@ -47,7 +49,8 @@ class Appt {
         creditsBefore: json['UserCreditsBefore'],
         creditsAfter: json['UserCreditsAfter'],
         canceled: json['Canceled'],
-        comp: json['Completed']);
+        comp: json['Completed'],
+        pseudonym: json['Pseudonym']);
   }
 }
 
@@ -89,9 +92,14 @@ class _HomePage extends State<HomePage> {
       print('received appointments:');
       final jsonResponse = jsonDecode("[" + response.body + "]");
       final data = jsonResponse[0]['response'][0] as List;
+      print('---');
+      print(data.runtimeType);
       print(data);
+      print('---');
       List<Appt> userEvents = [];
-      data.forEach((element) {
+      data[0].forEach((element) {
+        print('instance:');
+        print(element);
         element = element as Map<String, dynamic>;
         userEvents.add(Appt.fromJSON(element));
       });
@@ -399,33 +407,6 @@ class _HomePage extends State<HomePage> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                FutureBuilder<List<Appt>>(
-                                    future: userAppts,
-                                    builder: (
-                                      BuildContext context,
-                                      AsyncSnapshot<List<Appt>> snapshot,
-                                    ) {
-                                      if (snapshot.connectionState ==
-                                          ConnectionState.waiting) {
-                                        return CircularProgressIndicator();
-                                      } else if (snapshot.connectionState ==
-                                          ConnectionState.done) {
-                                        if (snapshot.hasError) {
-                                          return Text('${snapshot.error}');
-                                        } else if (snapshot.hasData) {
-                                          String days = "";
-                                          snapshot.data?.forEach(((element) =>
-                                              days = days +
-                                                  element.stime.toString()));
-                                          return Text(days);
-                                        } else {
-                                          return Text('Empty data');
-                                        }
-                                      } else {
-                                        return Text(
-                                            'State: ${snapshot.connectionState}');
-                                      }
-                                    }),
                                 Text(
                                   'This Month',
                                   //style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
@@ -446,22 +427,143 @@ class _HomePage extends State<HomePage> {
                                 )
                               ],
                             ),
-                            // NO APPOINTMENTS TEXT START
-                            // Text(
-                            //   'No upcoming appointments this month',
-                            //   //style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
-                            //   style: GoogleFonts.roboto(
-                            //       textStyle:
-                            //           Theme.of(context).textTheme.bodyText2),
-                            // ),
-                            // NO APPOINTMENTS TEXT END
-                            // ListView(
-                            //   padding: const EdgeInsets.all(8),
-                            //   children: <Widget>[
-                            //
-                            //   ],
-                            // ),
-                            // BEGINNING OF COOL STUFF
+                            FutureBuilder<List<Appt>>(
+                                future: userAppts,
+                                builder: (
+                                    BuildContext context,
+                                    AsyncSnapshot<List<Appt>> snapshot,
+                                    ) {
+                                  if (snapshot.connectionState ==
+                                      ConnectionState.waiting) {
+                                    return CircularProgressIndicator();
+                                  } else if (snapshot.connectionState ==
+                                      ConnectionState.done) {
+                                    if (snapshot.hasError) {
+                                      return Text('${snapshot.error}');
+                                    } else if (snapshot.hasData) {
+                                      List<Widget> appointmentWidgets = [];
+                                      List<String> weekdays = ['MON', 'TUE' 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
+                                      snapshot.data?.forEach(((appointment) => {
+                                        appointmentWidgets.add(
+                                      Padding(
+                                      padding: const EdgeInsets.fromLTRB(0, 0, 0, 18),
+                                      child: Row(
+                                      mainAxisAlignment:
+                                      MainAxisAlignment.spaceEvenly,
+                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                      children: [
+                                      Column(
+                                      mainAxisAlignment:
+                                      MainAxisAlignment.start,
+                                      crossAxisAlignment:
+                                      CrossAxisAlignment.end,
+                                      children: [
+                                      Text(
+                                      weekdays[appointment.stime.weekday-1],
+                                      style: GoogleFonts.roboto(
+                                      textStyle: Theme.of(context)
+                                          .textTheme
+                                          .bodyText2,
+                                      ).copyWith(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold),
+                                      ),
+                                      Text(
+                                      '${appointment.stime.day}',
+                                      style: GoogleFonts.roboto(
+                                      textStyle: Theme.of(context)
+                                          .textTheme
+                                          .bodyText2,
+                                      ).copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 36),
+                                      ),
+                                      ]),
+                                      const SizedBox(
+                                      width: 15,
+                                      ),
+                                      ButtonTheme(
+                                      child: TextButton(
+                                      //TODO: REMOVE FOR TESTING ONLY, should replace with stateful widget
+                                      style: ButtonStyle(
+                                      padding: MaterialStateProperty.all<
+                                      EdgeInsets>(EdgeInsets.all(20)),
+                                      // elevation:
+                                      // MaterialStateProperty.all<double>(2.5),
+                                      backgroundColor:
+                                      MaterialStateProperty.all<
+                                      Color>(Color(0xffC7C8CF)),
+                                      shape: MaterialStateProperty.all<
+                                      RoundedRectangleBorder>(
+                                      RoundedRectangleBorder(
+                                      borderRadius:
+                                      BorderRadius.circular(10.0),
+                                      ))),
+                                      onPressed: () =>
+                                      _presentAppointmentDetailsOverlay(
+                                      'Jane|March 10, 2022|3:30 - 4:00pm'),
+                                      child: Row(
+                                      mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                      crossAxisAlignment:
+                                      CrossAxisAlignment.center,
+                                      children: [
+                                      Column(
+                                      mainAxisAlignment:
+                                      MainAxisAlignment.start,
+                                      crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                      children: [
+                                      Text(
+                                      'Call with ${appointment.pseudonym}',
+                                      style: GoogleFonts.roboto(
+                                      textStyle:
+                                      Theme.of(context)
+                                          .textTheme
+                                          .bodyText2,
+                                      ).copyWith(
+                                      fontSize: 18,
+                                      fontWeight:
+                                      FontWeight.bold),
+                                      ),
+                                      Text(
+                                      'at ${appointment.stime.hour}:${appointment.stime.minute} - ${appointment.etime.hour}:${appointment.etime.minute} PST',
+                                      style: GoogleFonts.roboto(
+                                      textStyle:
+                                      Theme.of(context)
+                                          .textTheme
+                                          .bodyText2,
+                                      ).copyWith(fontSize: 16),
+                                      ),
+                                      ]),
+                                      const SizedBox(
+                                      width: 110,
+                                      ),
+                                      ],
+                                      )),
+                                      )
+                                      ],),
+                                        ))}
+                                      )
+                                      );
+
+                                      // days = days +
+                                      //     element.aid.toString()));
+                                      return  Column(
+                                          mainAxisAlignment:
+                                          MainAxisAlignment.start,
+                                          crossAxisAlignment:
+                                          CrossAxisAlignment.end,
+                                          children: appointmentWidgets,
+                                      );
+                                    } else {
+                                      return Text('Empty data');
+                                    }
+                                  } else {
+                                    return Text(
+                                        'State: ${snapshot.connectionState}');
+                                  }
+                                }),
                             Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceEvenly,
