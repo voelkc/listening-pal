@@ -1,5 +1,7 @@
+import 'package:async/async.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:http/retry.dart';
 import './onboarding.dart';
 import 'dart:async';
 import 'dart:convert';
@@ -8,6 +10,7 @@ import './home.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/date_symbol_data_local.dart';
 
 class Event {
   const Event(this.sessionTime, this.title);
@@ -20,28 +23,6 @@ Object body = {"userID": 1};
 class ApptPage extends StatefulWidget {
   @override
   _TableBasicsState createState() => _TableBasicsState();
-}
-
-// "05/1103:30PM"
-availParser(String) {
-  var commaIndx = [];
-  var i = 0;
-  for (int i = 0; String.length; i++) {
-    if (String.indexOf(',') != -1) {
-      commaIndx.add(String.indexOf(','));
-    }
-  }
-  var x = "";
-  while (!commaIndx.contains(i) && i < String.length) {
-    x = String.substring(i, i + 5) +
-        "/2022 " +
-        String.substring(i + 5, i + 10) +
-        " " +
-        String.substring(i + 10, i + 12);
-    i += 12;
-  }
-  DateFormat format = new DateFormat("MM/dd/yyy hh:mm a");
-  return format.parse(x);
 }
 
 class Appt {
@@ -94,21 +75,36 @@ class _TableBasicsState extends State<ApptPage> {
   String selectedTime = "";
 
   Map<DateTime, List<Appt>> selectedEvents = {};
+  List<Appt> userEvents = [];
+
+  late Future<List<dynamic>> fut_userTimes;
+  List<String> userTimes = [];
 
   String selectedSession = '';
   @override
   void initState() {
+    initializeDateFormatting('en_US');
     super.initState();
+
+    fut_userTimes = getAvailTimes();
+    fut_userTimes.then((value) => value.forEach((element) {
+          userTimes.add(element.toString());
+        }));
+
+    DateFormat dateFormat = DateFormat.yMd('en_US');
     userAppts = getUserAppts();
-    final DateFormat formatter = DateFormat('YYYY-MM-dd');
-    userAppts.then((userAppts) => {
-          for (var day in userAppts)
-            {selectedEvents[formatter.format(day.stime)]?.add(day)}
-        });
+    userAppts.then((appts) {
+      appts.forEach((element) {
+        element = element as Map<String, dynamic>;
+        userEvents.add(Appt.fromJSON(element));
+      });
+    });
+    userEvents.forEach(
+        (appt) => {selectedEvents[dateFormat.format(appt.stime)]?.add(appt)});
   }
 
-  Future<List<Appt>> getUserAppts() async {
-    print('trying');
+  Future<List<dynamic>> getUserAppts() async {
+    print('im gonna cry');
     final response = await http.post(
         Uri.parse(
             'https://54sz8yaq55.execute-api.us-west-2.amazonaws.com/getUserAppts'),
@@ -118,29 +114,51 @@ class _TableBasicsState extends State<ApptPage> {
           "Accept": "application/json"
         });
     if (response.statusCode == 200) {
-      final jsonResponse = jsonDecode(response.body);
-      final data = jsonResponse['response'][0][0];
-      // print(data);
-      List<Appt> userEvents = [];
-      data.forEach((element) {
-        element = element as Map<String, dynamic>;
-        userEvents.add(Appt.fromJSON(element));
-      });
-      final DateFormat formatter = DateFormat('YYYY-MM-dd');
+      List<dynamic> jsonResponse = jsonDecode("[" + response.body + "]");
 
-      userEvents.forEach((element) {
-        setState(() {
-          selectedEvents[formatter.format(element.stime)]?.add(element);
-        });
-      });
+      List data = jsonResponse[0]['response'][0][0] as List<dynamic>;
+      // List<Appt> userEvents = [];
+      // data.forEach((element) {
+      //   element = element as Map<String, Appt>;
+      //   userEvents.add(Appt.fromJSON(element));
+      // });
 
-      return userEvents;
+      return data;
     } else {
       throw Exception('Failed to do anything');
     }
   }
 
-  Future<Appt> createUserAppt(Object body) async {
+  Future<List<dynamic>> getAvailTimes() async {
+    print('trying');
+    final response = await http.post(
+        Uri.parse(
+            'https://54sz8yaq55.execute-api.us-west-2.amazonaws.com/getAllAvailability'),
+        body: jsonEncode(body),
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Accept": "application/json"
+        });
+    if (response.statusCode == 200) {
+      final jsonResponse = jsonDecode("[" + response.body + "]");
+
+      List data =
+          jsonResponse.toList()[0]['totalAvailability'] as List<dynamic>;
+      // List<dynamic> availTimes = [];
+      // var data2 = data as List<DateTime>;
+      // data2.forEach((element) {
+      //   // DateFormat formatter = DateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+      //   // element = DateTime.parse(formatter.format(element));
+      //   availTimes.add(element);
+      // });
+
+      return data;
+    } else {
+      throw Exception('Failed to do anything');
+    }
+  }
+
+  Future createUserAppt(Object body) async {
     final response = await http.post(
         Uri.parse(
             'https://54sz8yaq55.execute-api.us-west-2.amazonaws.com/userSchedulesCall'),
@@ -151,8 +169,6 @@ class _TableBasicsState extends State<ApptPage> {
         });
 
     if (response.statusCode == 200) {
-      setState(() {});
-      return jsonDecode(response.body);
     } else {
       throw Exception('Failed to do anything');
     }
@@ -175,7 +191,6 @@ class _TableBasicsState extends State<ApptPage> {
   }
 
   List<Appt> _getEventsfromDay(DateTime selectedDay) {
-    getUserAppts();
     return selectedEvents[selectedDay] ?? [];
   }
 
@@ -184,7 +199,15 @@ class _TableBasicsState extends State<ApptPage> {
     super.dispose();
   }
 
-  late Future<List<Appt>> userAppts;
+  late Future<List<dynamic>> userAppts;
+  Future<List<dynamic>> fetchResults() async {
+    List<dynamic> results = [];
+    final result1 = await fut_userTimes;
+    final result2 = await userAppts;
+    results.add(result1);
+    results.add(result2);
+    return results;
+  }
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -307,11 +330,11 @@ class _TableBasicsState extends State<ApptPage> {
                                 fontSize: 24.0, color: Color(0xff41434D)),
                           ))),
                 ]),
-            FutureBuilder<List<Appt>>(
-                future: userAppts,
+            FutureBuilder<List<dynamic>>(
+                future: fetchResults(),
                 builder: (
                   BuildContext context,
-                  AsyncSnapshot<List<Appt>> snapshot,
+                  AsyncSnapshot<List<dynamic>> snapshot,
                 ) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return (Expanded(
@@ -337,11 +360,6 @@ class _TableBasicsState extends State<ApptPage> {
                               _focusedDay = focusedDay;
                             });
                             showWidget = true;
-                            showDialog(
-                              context: context,
-                              builder: (BuildContext context) =>
-                                  _buildPopupDialog(context),
-                            );
                           },
                           onFormatChanged: (format) {
                             if (_calendarFormat != format) {
@@ -384,11 +402,14 @@ class _TableBasicsState extends State<ApptPage> {
                                   _focusedDay = focusedDay;
                                 });
                                 showWidget = true;
-                                showDialog(
-                                  context: context,
-                                  builder: (BuildContext context) =>
-                                      _buildPopupDialog(context),
-                                );
+                                if (snapshot.data?[0] != null) {
+                                  showDialog(
+                                    context: context,
+                                    builder: (BuildContext context) =>
+                                        _buildPopupDialog(
+                                            context, snapshot.data?[0]),
+                                  );
+                                }
                               },
                               onFormatChanged: (format) {
                                 if (_calendarFormat != format) {
@@ -430,11 +451,6 @@ class _TableBasicsState extends State<ApptPage> {
                             _focusedDay = focusedDay;
                           });
                           showWidget = true;
-                          showDialog(
-                            context: context,
-                            builder: (BuildContext context) =>
-                                _buildPopupDialog(context),
-                          );
                         },
                         onFormatChanged: (format) {
                           if (_calendarFormat != format) {
@@ -466,30 +482,6 @@ class _TableBasicsState extends State<ApptPage> {
                         : Key("0"),
                     padding: EdgeInsets.all(8),
                     shrinkWrap: true,
-                    // children:
-                    // [
-                    //   ..._getEventsfromDay(DateTime.utc(_selectedDay.year,
-                    //           _selectedDay.month, _selectedDay.day))
-                    //       .map(
-                    //     (Appt event) => GestureDetector(
-                    //         onTap: () {
-                    //           showDialog(
-                    //             context: context,
-                    //             builder: (BuildContext context) =>
-                    //                 buildEditCallPopup(context),
-                    //           );
-                    //         },
-                    //         child: Card(
-                    //           shape: RoundedRectangleBorder(
-                    //               side: BorderSide(color: Colors.grey),
-                    //               borderRadius: BorderRadius.circular(15.0)),
-                    //           child: ListTile(
-                    //             title: Text(
-                    //                 '$event.lid' + ' at ' + '$event.stime'),
-                    //           ),
-                    //         )),
-                    //   )
-                    // ],
                   )
                 : Text('No events',
                     style: GoogleFonts.roboto(
@@ -681,42 +673,32 @@ class _TableBasicsState extends State<ApptPage> {
     );
   }
 
-  Widget _buildPopupDialog(
-    BuildContext context,
-  ) {
-    List<String> times = [];
-    selectedEvents[_selectedDay]?.forEach((element) {
-      times.add(DateFormat.Hm(element.stime).toString());
+  Widget _buildPopupDialog(BuildContext context, List<dynamic> data) {
+    List<String> availTimes = [];
+    print("tears streaming down my face");
+    String selectedDateTime = "";
+    List<String> dateTimes = [];
+    data.forEach((element) {
+      DateTime parseDate =
+          new DateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").parse(element);
+      var inputDate = DateTime.parse(parseDate.toString());
+      var outputFormat = DateFormat('MM/dd/yyyy');
+      var outputDate = outputFormat.format(inputDate);
+      var outputTime = DateFormat.Hm('en').format(inputDate);
+      var selectedDate = outputFormat.format(_selectedDay);
+      DateTime parseDate_0 =
+          new DateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").parse(element);
+      var inputDate_0 = DateTime.parse(parseDate_0.toString());
+      var outputFormat_0 = DateFormat("yyyy-MM-dd HH:mm:ss");
+      var outputTime_0 = outputFormat_0.format(inputDate_0);
+      if (outputDate == selectedDate) {
+        availTimes.add(outputTime);
+        dateTimes.add(outputTime_0);
+      }
     });
-    String? selectedTime = "";
-    List<Widget> temp = [];
-    for (var i = 1; i < times.length; i++) {
-      temp.add(
-        ElevatedButton(
-          child: Text(times[0],
-              style: GoogleFonts.roboto(
-                  textStyle: TextStyle(color: Colors.black))),
-          style: ButtonStyle(
-              textStyle: MaterialStateProperty.all<TextStyle>(
-                  GoogleFonts.roboto(
-                      textStyle:
-                          TextStyle(color: Colors.black, fontSize: 11.0))),
-              elevation: MaterialStateProperty.all<double>(0),
-              backgroundColor:
-                  MaterialStateProperty.all<Color>(Color(0xff95D4D8)),
-              maximumSize: MaterialStateProperty.all<Size>(
-                  Size(MediaQuery.of(context).size.width * 0.2, 40)),
-              shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                  RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(18.0),
-              ))),
-          onPressed: (() => setState(() {
-                timeClicked = !timeClicked;
-                selectedTime = times[0];
-              })),
-        ),
-      );
-    }
+
+    String? selectedTime = dateTimes[0];
+
     return StatefulBuilder(
       builder: (context, setState) => AlertDialog(
           backgroundColor: Color(0xff41434D),
@@ -814,31 +796,49 @@ class _TableBasicsState extends State<ApptPage> {
                                   SizedBox(
                                     width: 5,
                                   ),
-                                  Text(times[0],
+                                  Text('$selectedTime',
                                       style: GoogleFonts.roboto(
                                         textStyle:
                                             TextStyle(color: Colors.white),
                                       ))
                                 ])
                               ])
-                        : DropdownButton<String>(
-                            hint: Text("Please select a time",
+                        : availTimes.length > 1
+                            ? Column(children: [
+                                DropdownButton<String>(
+                                  hint: Text("Please select a time",
+                                      style: GoogleFonts.roboto(
+                                        textStyle:
+                                            TextStyle(color: Colors.white),
+                                      )),
+                                  value: availTimes[0],
+                                  items: availTimes.map((String value) {
+                                    return DropdownMenuItem<String>(
+                                      value: value,
+                                      child: Text(value),
+                                    );
+                                  }).toList(),
+                                  onChanged: (newValue) {
+                                    setState(() {
+                                      selectedTime = newValue;
+                                    });
+                                  },
+                                ),
+                                IconButton(
+                                    icon: Icon(
+                                      Icons.arrow_forward,
+                                      color: Colors.white,
+                                    ),
+                                    onPressed: () => {
+                                          setState(() {
+                                            timeClicked = true;
+                                          })
+                                        })
+                              ])
+                            : (Text("No available appointment times.",
                                 style: GoogleFonts.roboto(
                                   textStyle: TextStyle(color: Colors.white),
-                                )),
-                            value: selectedTime,
-                            items: times.map((String value) {
-                              return DropdownMenuItem<String>(
-                                value: value,
-                                child: Text(value),
-                              );
-                            }).toList(),
-                            onChanged: (newValue) {
-                              setState(() {
-                                selectedTime = newValue;
-                              });
-                            },
-                          ),
+                                )))
                   ],
                 ),
                 Row(
@@ -864,19 +864,36 @@ class _TableBasicsState extends State<ApptPage> {
                                   borderRadius: BorderRadius.circular(22.0),
                                 ))),
                             onPressed: (() => {
-                                  // if (selectedEvents[_selectedDay] == null)
-                                  //   {
-                                  createUserAppt(
-                                      {"userID": 1, "StartTime": selectedTime}),
-                                  // },
-                                  // else
-                                  //   {
-                                  //     selectedEvents[_selectedDay as DateTime] =
-                                  //         [
-                                  //       // Appt(selectedTime, 'Session with Sam')
-                                  //     ]
-                                  //   },
-                                  getUserAppts(),
+                                  // make selectedTime into availability-like string
+                                  selectedDateTime = DateFormat("hh:mma")
+                                      .format(DateFormat("HH:mm")
+                                          .parse(selectedTime!)),
+
+                                  if (_selectedDay.month < 10)
+                                    {
+                                      selectedDateTime =
+                                          _selectedDay.month.toString() +
+                                              "/0" +
+                                              _selectedDay.day.toString() +
+                                              "/" +
+                                              _selectedDay.year.toString() +
+                                              selectedDateTime,
+                                    }
+                                  else
+                                    {
+                                      selectedDateTime =
+                                          _selectedDay.month.toString() +
+                                              "/" +
+                                              _selectedDay.day.toString() +
+                                              "/" +
+                                              _selectedDay.year.toString() +
+                                              selectedDateTime,
+                                    },
+                                  print(selectedDateTime),
+                                  createUserAppt({
+                                    "userID": 1,
+                                    "StartTime": selectedDateTime
+                                  }),
                                   Navigator.pop(context),
                                   selectedTime = "",
                                   timeClicked = false,

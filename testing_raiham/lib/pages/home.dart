@@ -271,9 +271,9 @@ class _HomePage extends State<HomePage> {
                             FutureBuilder<List<Appt>>(
                                 future: userAppts,
                                 builder: (
-                                    BuildContext context,
-                                    AsyncSnapshot<List<Appt>> snapshot,
-                                    ) {
+                                  BuildContext context,
+                                  AsyncSnapshot<List<Appt>> snapshot,
+                                ) {
                                   if (snapshot.connectionState ==
                                       ConnectionState.waiting) {
                                     return CircularProgressIndicator();
@@ -284,290 +284,363 @@ class _HomePage extends State<HomePage> {
                                     } else if (snapshot.hasData) {
                                       List<Widget> monthAppointmentWidgets = [];
                                       List<Widget> todayAppointmentWidgets = [];
-                                      List<String> weekdays = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
-                                      List<String> months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+                                      List<String> weekdays = [
+                                        'MON',
+                                        'TUE',
+                                        'WED',
+                                        'THU',
+                                        'FRI',
+                                        'SAT',
+                                        'SUN'
+                                      ];
+                                      List<String> months = [
+                                        'January',
+                                        'February',
+                                        'March',
+                                        'April',
+                                        'May',
+                                        'June',
+                                        'July',
+                                        'August',
+                                        'September',
+                                        'October',
+                                        'November',
+                                        'December'
+                                      ];
                                       final now = DateTime.now();
                                       snapshot.data?.forEach(((appointment) => {
-                                        if(appointment.stime.day == now.day && appointment.stime.month == now.month){ // if appointment is for today
-                                          todayAppointmentWidgets.add(
-                                      Padding(
-                                      padding: const EdgeInsets.fromLTRB(0, 0, 0, 18),
-                                          child: Row(
-                                              mainAxisAlignment:
-                                              MainAxisAlignment.spaceEvenly,
-                                              crossAxisAlignment: CrossAxisAlignment.center,
-                                              children: [
-                                                Column(
-                                                    mainAxisAlignment:
-                                                    MainAxisAlignment.start,
-                                                    crossAxisAlignment:
-                                                    CrossAxisAlignment.end,
-                                                    children: [
-                                                      Text(
-                                                        weekdays[appointment.stime.weekday - 1],
-                                                        style: GoogleFonts.roboto(
-                                                          textStyle: Theme.of(context)
-                                                              .textTheme
-                                                              .bodyText2,
-                                                        ).copyWith(
-                                                            fontSize: 18,
-                                                            fontWeight: FontWeight.bold),
-                                                      ),
-                                                      Text(
-                                                        '${appointment.stime.day}',
-                                                        style: GoogleFonts.roboto(
-                                                          textStyle: Theme.of(context)
-                                                              .textTheme
-                                                              .bodyText2,
-                                                        ).copyWith(
-                                                            fontWeight: FontWeight.bold,
-                                                            fontSize: 36),
-                                                      ),
-                                                    ]),
-                                                const SizedBox(
-                                                  width: 15,
-                                                ),
-                                                ButtonTheme(
-                                                  child: TextButton(
-                                                    //TODO: REMOVE FOR TESTING ONLY, should replace with stateful widget
-                                                      style: ButtonStyle(
-                                                          padding: MaterialStateProperty.all<
-                                                              EdgeInsets>(EdgeInsets.all(20)),
-                                                          // elevation:
-                                                          // MaterialStateProperty.all<double>(2.5),
-                                                          backgroundColor:
-                                                          MaterialStateProperty.all<Color>(
-                                                              Colors.white),
-                                                          shape: MaterialStateProperty.all<RoundedRectangleBorder>(RoundedRectangleBorder(
-                                                              borderRadius:
-                                                              BorderRadius.circular(10.0),
-                                                              side: const BorderSide(
-                                                                  width: 2.0,
-                                                                  color:
-                                                                  Color(0xff95D4D8))))),
-                                                      onPressed: () => _presentJoinOverlay(
-                                                          '${appointment.pseudonym}|${months[appointment.stime.month - 1]} ${appointment.stime.day}, ${appointment.stime.year}|${appointment.stime.hour}:${appointment.stime.minute} - ${appointment.etime.hour}:${appointment.etime.minute}'),
-                                                      child: Row(
-                                                        mainAxisAlignment:
-                                                        MainAxisAlignment.spaceBetween,
-                                                        crossAxisAlignment:
-                                                        CrossAxisAlignment.center,
-                                                        children: [
-                                                          Column(
-                                                              mainAxisAlignment:
-                                                              MainAxisAlignment.start,
-                                                              crossAxisAlignment:
-                                                              CrossAxisAlignment.start,
-                                                              children: [
-                                                                Text(
-                                                                  'Call with ${appointment.pseudonym}',
-                                                                  style: GoogleFonts.roboto(
-                                                                    textStyle:
-                                                                    Theme.of(context)
-                                                                        .textTheme
-                                                                        .bodyText2,
-                                                                  ).copyWith(
-                                                                      fontSize: 18,
-                                                                      fontWeight:
-                                                                      FontWeight.bold),
-                                                                ),
-                                                                Text(
-                                                                  'at ${appointment.stime.hour}:${appointment.stime.minute} - ${appointment.etime.hour}:${appointment.etime.minute} PST',
-                                                                  style: GoogleFonts.roboto(
-                                                                    textStyle:
-                                                                    Theme.of(context)
-                                                                        .textTheme
-                                                                        .bodyText2,
-                                                                  ).copyWith(fontSize: 16),
-                                                                ),
-                                                              ]),
-                                                          const SizedBox(
-                                                            width: 80,
-                                                          ),
-                                                          const Icon(
-                                                            Icons.call_outlined,
-                                                            color: Color(0xff41434D),
-                                                            size: 30.0,
-                                                            // textDirection: TextDirection.RTL,
-                                                            semanticLabel:
-                                                            'Call icon',
-                                                          ),
-                                                        ],
-                                                      )),
-                                                )
-                                              ])))
-                                        } else { // if it for another/later day
-                                          monthAppointmentWidgets.add(
-                                              Padding(
-                                                padding: const EdgeInsets.fromLTRB(0, 0, 0, 18),
-                                                child: Row(
-                                                  mainAxisAlignment:
-                                                  MainAxisAlignment.spaceEvenly,
-                                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                                  children: [
-                                                    Column(
-                                                        mainAxisAlignment:
-                                                        MainAxisAlignment.start,
-                                                        crossAxisAlignment:
-                                                        CrossAxisAlignment.end,
-                                                        children: [
-                                                          Text(
-                                                            weekdays[appointment.stime.weekday - 1],
-                                                            style: GoogleFonts.roboto(
-                                                              textStyle: Theme.of(context)
-                                                                  .textTheme
-                                                                  .bodyText2,
-                                                            ).copyWith(
-                                                                fontSize: 18,
-                                                                fontWeight: FontWeight.bold),
-                                                          ),
-                                                          Text(
-                                                            '${appointment.stime.day}',
-                                                            style: GoogleFonts.roboto(
-                                                              textStyle: Theme.of(context)
-                                                                  .textTheme
-                                                                  .bodyText2,
-                                                            ).copyWith(
-                                                                fontWeight: FontWeight.bold,
-                                                                fontSize: 36),
-                                                          ),
-                                                        ]),
-                                                    const SizedBox(
-                                                      width: 15,
-                                                    ),
-                                                    ButtonTheme(
-                                                      child: TextButton(
-                                                        //TODO: REMOVE FOR TESTING ONLY, should replace with stateful widget
-                                                          style: ButtonStyle(
-                                                              padding: MaterialStateProperty.all<
-                                                                  EdgeInsets>(EdgeInsets.all(20)),
-                                                              // elevation:
-                                                              // MaterialStateProperty.all<double>(2.5),
-                                                              backgroundColor:
-                                                              MaterialStateProperty.all<
-                                                                  Color>(Color(0xffC7C8CF)),
-                                                              shape: MaterialStateProperty.all<
-                                                                  RoundedRectangleBorder>(
-                                                                  RoundedRectangleBorder(
-                                                                    borderRadius:
-                                                                    BorderRadius.circular(10.0),
-                                                                  ))),
-                                                          onPressed: () =>
-                                                              _presentAppointmentDetailsOverlay(
-                                                                  '${appointment.pseudonym}|${months[appointment.stime.month - 1]} ${appointment.stime.day}, ${appointment.stime.year}|${appointment.stime.hour}:${appointment.stime.minute} - ${appointment.etime.hour}:${appointment.etime.minute}'),
-                                                          child: Row(
+                                            if (appointment.stime.day ==
+                                                    now.day &&
+                                                appointment.stime.month ==
+                                                    now.month)
+                                              {
+                                                // if appointment is for today
+                                                todayAppointmentWidgets.add(
+                                                    Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                    .fromLTRB(
+                                                                0, 0, 0, 18),
+                                                        child: Row(
                                                             mainAxisAlignment:
-                                                            MainAxisAlignment.spaceBetween,
+                                                                MainAxisAlignment
+                                                                    .spaceEvenly,
                                                             crossAxisAlignment:
-                                                            CrossAxisAlignment.center,
+                                                                CrossAxisAlignment
+                                                                    .center,
                                                             children: [
                                                               Column(
                                                                   mainAxisAlignment:
-                                                                  MainAxisAlignment.start,
+                                                                      MainAxisAlignment
+                                                                          .start,
                                                                   crossAxisAlignment:
-                                                                  CrossAxisAlignment.start,
+                                                                      CrossAxisAlignment
+                                                                          .end,
                                                                   children: [
                                                                     Text(
-                                                                      'Call with ${appointment.pseudonym}',
-                                                                      style: GoogleFonts.roboto(
-                                                                        textStyle:
-                                                                        Theme.of(context)
+                                                                      weekdays[
+                                                                          appointment.stime.weekday -
+                                                                              1],
+                                                                      style: GoogleFonts
+                                                                          .roboto(
+                                                                        textStyle: Theme.of(context)
                                                                             .textTheme
                                                                             .bodyText2,
                                                                       ).copyWith(
-                                                                          fontSize: 18,
+                                                                          fontSize:
+                                                                              18,
                                                                           fontWeight:
-                                                                          FontWeight.bold),
+                                                                              FontWeight.bold),
                                                                     ),
                                                                     Text(
-                                                                      'at ${appointment.stime.hour}:${appointment.stime.minute} - ${appointment.etime.hour}:${appointment.etime.minute} PST',
-                                                                      style: GoogleFonts.roboto(
-                                                                        textStyle:
-                                                                        Theme.of(context)
+                                                                      '${appointment.stime.day}',
+                                                                      style: GoogleFonts
+                                                                          .roboto(
+                                                                        textStyle: Theme.of(context)
                                                                             .textTheme
                                                                             .bodyText2,
-                                                                      ).copyWith(fontSize: 16),
+                                                                      ).copyWith(
+                                                                          fontWeight: FontWeight
+                                                                              .bold,
+                                                                          fontSize:
+                                                                              36),
                                                                     ),
                                                                   ]),
                                                               const SizedBox(
-                                                                width: 110,
+                                                                width: 15,
                                                               ),
-                                                            ],
-                                                          )),
-                                                    )
-                                                  ],),
-                                              ))
-                                        }
-                                      }
-                                      )
-                                      );
-                                      if(monthAppointmentWidgets.isEmpty){
-                                        monthAppointmentWidgets.add(const Text('You have no upcoming appointments.'));
+                                                              ButtonTheme(
+                                                                child: TextButton(
+                                                                    //TODO: REMOVE FOR TESTING ONLY, should replace with stateful widget
+                                                                    style: ButtonStyle(
+                                                                        padding: MaterialStateProperty.all<EdgeInsets>(EdgeInsets.all(20)),
+                                                                        // elevation:
+                                                                        // MaterialStateProperty.all<double>(2.5),
+                                                                        backgroundColor: MaterialStateProperty.all<Color>(Colors.white),
+                                                                        shape: MaterialStateProperty.all<RoundedRectangleBorder>(RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0), side: const BorderSide(width: 2.0, color: Color(0xff95D4D8))))),
+                                                                    onPressed: () => _presentJoinOverlay('${appointment.pseudonym}|${months[appointment.stime.month - 1]} ${appointment.stime.day}, ${appointment.stime.year}|${appointment.stime.hour}:${appointment.stime.minute} - ${appointment.etime.hour}:${appointment.etime.minute}'),
+                                                                    child: Row(
+                                                                      mainAxisAlignment:
+                                                                          MainAxisAlignment
+                                                                              .spaceBetween,
+                                                                      crossAxisAlignment:
+                                                                          CrossAxisAlignment
+                                                                              .center,
+                                                                      children: [
+                                                                        Column(
+                                                                            mainAxisAlignment:
+                                                                                MainAxisAlignment.start,
+                                                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                                                            children: [
+                                                                              Text(
+                                                                                'Call with ${appointment.pseudonym}',
+                                                                                style: GoogleFonts.roboto(
+                                                                                  textStyle: Theme.of(context).textTheme.bodyText2,
+                                                                                ).copyWith(fontSize: 18, fontWeight: FontWeight.bold),
+                                                                              ),
+                                                                              Text(
+                                                                                'at ${appointment.stime.hour}:${appointment.stime.minute} - ${appointment.etime.hour}:${appointment.etime.minute} PST',
+                                                                                style: GoogleFonts.roboto(
+                                                                                  textStyle: Theme.of(context).textTheme.bodyText2,
+                                                                                ).copyWith(fontSize: 16),
+                                                                              ),
+                                                                            ]),
+                                                                        const SizedBox(
+                                                                          width:
+                                                                              80,
+                                                                        ),
+                                                                        const Icon(
+                                                                          Icons
+                                                                              .call_outlined,
+                                                                          color:
+                                                                              Color(0xff41434D),
+                                                                          size:
+                                                                              30.0,
+                                                                          // textDirection: TextDirection.RTL,
+                                                                          semanticLabel:
+                                                                              'Call icon',
+                                                                        ),
+                                                                      ],
+                                                                    )),
+                                                              )
+                                                            ])))
+                                              }
+                                            else
+                                              {
+                                                // if it for another/later day
+                                                monthAppointmentWidgets
+                                                    .add(Padding(
+                                                  padding:
+                                                      const EdgeInsets.fromLTRB(
+                                                          0, 0, 0, 18),
+                                                  child: Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .spaceEvenly,
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .center,
+                                                    children: [
+                                                      Column(
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .start,
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .end,
+                                                          children: [
+                                                            Text(
+                                                              weekdays[appointment
+                                                                      .stime
+                                                                      .weekday -
+                                                                  1],
+                                                              style: GoogleFonts
+                                                                  .roboto(
+                                                                textStyle: Theme.of(
+                                                                        context)
+                                                                    .textTheme
+                                                                    .bodyText2,
+                                                              ).copyWith(
+                                                                  fontSize: 18,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold),
+                                                            ),
+                                                            Text(
+                                                              '${appointment.stime.day}',
+                                                              style: GoogleFonts
+                                                                  .roboto(
+                                                                textStyle: Theme.of(
+                                                                        context)
+                                                                    .textTheme
+                                                                    .bodyText2,
+                                                              ).copyWith(
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold,
+                                                                  fontSize: 36),
+                                                            ),
+                                                          ]),
+                                                      const SizedBox(
+                                                        width: 15,
+                                                      ),
+                                                      ButtonTheme(
+                                                        child: TextButton(
+                                                            //TODO: REMOVE FOR TESTING ONLY, should replace with stateful widget
+                                                            style: ButtonStyle(
+                                                                padding: MaterialStateProperty.all<
+                                                                        EdgeInsets>(
+                                                                    EdgeInsets
+                                                                        .all(
+                                                                            20)),
+                                                                // elevation:
+                                                                // MaterialStateProperty.all<double>(2.5),
+                                                                backgroundColor:
+                                                                    MaterialStateProperty.all<Color>(Color(
+                                                                        0xffC7C8CF)),
+                                                                shape: MaterialStateProperty.all<
+                                                                        RoundedRectangleBorder>(
+                                                                    RoundedRectangleBorder(
+                                                                  borderRadius:
+                                                                      BorderRadius
+                                                                          .circular(
+                                                                              10.0),
+                                                                ))),
+                                                            onPressed: () =>
+                                                                _presentAppointmentDetailsOverlay(
+                                                                    '${appointment.pseudonym}|${months[appointment.stime.month - 1]} ${appointment.stime.day}, ${appointment.stime.year}|${appointment.stime.hour}:${appointment.stime.minute} - ${appointment.etime.hour}:${appointment.etime.minute}'),
+                                                            child: Row(
+                                                              mainAxisAlignment:
+                                                                  MainAxisAlignment
+                                                                      .spaceBetween,
+                                                              crossAxisAlignment:
+                                                                  CrossAxisAlignment
+                                                                      .center,
+                                                              children: [
+                                                                Column(
+                                                                    mainAxisAlignment:
+                                                                        MainAxisAlignment
+                                                                            .start,
+                                                                    crossAxisAlignment:
+                                                                        CrossAxisAlignment
+                                                                            .start,
+                                                                    children: [
+                                                                      Text(
+                                                                        'Call with ${appointment.pseudonym}',
+                                                                        style: GoogleFonts
+                                                                            .roboto(
+                                                                          textStyle: Theme.of(context)
+                                                                              .textTheme
+                                                                              .bodyText2,
+                                                                        ).copyWith(
+                                                                            fontSize:
+                                                                                18,
+                                                                            fontWeight:
+                                                                                FontWeight.bold),
+                                                                      ),
+                                                                      Text(
+                                                                        'at ${appointment.stime.hour}:${appointment.stime.minute} - ${appointment.etime.hour}:${appointment.etime.minute} PST',
+                                                                        style: GoogleFonts
+                                                                            .roboto(
+                                                                          textStyle: Theme.of(context)
+                                                                              .textTheme
+                                                                              .bodyText2,
+                                                                        ).copyWith(
+                                                                            fontSize:
+                                                                                16),
+                                                                      ),
+                                                                    ]),
+                                                                const SizedBox(
+                                                                  width: 110,
+                                                                ),
+                                                              ],
+                                                            )),
+                                                      )
+                                                    ],
+                                                  ),
+                                                ))
+                                              }
+                                          }));
+                                      if (monthAppointmentWidgets.isEmpty) {
+                                        monthAppointmentWidgets.add(const Text(
+                                            'You have no upcoming appointments.'));
                                       }
 
-                                      if(todayAppointmentWidgets.isEmpty){
-                                        todayAppointmentWidgets.add(const Text('You have no appointments today.'));
+                                      if (todayAppointmentWidgets.isEmpty) {
+                                        todayAppointmentWidgets.add(const Text(
+                                            'You have no appointments today.'));
                                       }
 
                                       // days = days +
                                       //     element.aid.toString()));
-                                        return
-                                          Column(
-                                            mainAxisAlignment: MainAxisAlignment.start,
-                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                      return Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.start,
                                             children: [
-                                              Row(
-                                                mainAxisAlignment: MainAxisAlignment.start,
-                                                children: [
-                                                  Column(
-                                                    mainAxisAlignment: MainAxisAlignment.start,
-                                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                                    children: [
-                                                      Text(
-                                                        'Today',
-                                                        //style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
-                                                        style: GoogleFonts.dongle(
-                                                            textStyle:
-                                                            Theme.of(context).textTheme.headline1),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ],
-                                              ),
-                                              ...todayAppointmentWidgets,
-                                              Flex(
-                                                direction: Axis.horizontal,
-                                                mainAxisSize: MainAxisSize.max,
-                                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                crossAxisAlignment: CrossAxisAlignment.center,
+                                              Column(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.start,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
                                                 children: [
                                                   Text(
-                                                    'This Month',
+                                                    'Today',
                                                     //style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
                                                     style: GoogleFonts.dongle(
-                                                        textStyle: Theme.of(context)
-                                                            .textTheme
-                                                            .headline1),
+                                                        textStyle:
+                                                            Theme.of(context)
+                                                                .textTheme
+                                                                .headline1),
                                                   ),
-                                                  const Padding(
-                                                    padding: EdgeInsets.fromLTRB(120, 0, 0, 0),
-                                                    child: Icon(
-                                                      Icons.calendar_month_rounded,
-                                                      color: Color(0xff41434D),
-                                                      size: 30.0,
-                                                      semanticLabel:
-                                                      'Text to announce in accessibility modes',
-                                                    ),
-                                                  )
                                                 ],
                                               ),
-                                            Column(
-                                            mainAxisAlignment: MainAxisAlignment.start,
-                                            crossAxisAlignment: CrossAxisAlignment.end,
+                                            ],
+                                          ),
+                                          ...todayAppointmentWidgets,
+                                          Flex(
+                                            direction: Axis.horizontal,
+                                            mainAxisSize: MainAxisSize.max,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.center,
+                                            children: [
+                                              Text(
+                                                'This Month',
+                                                //style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
+                                                style: GoogleFonts.dongle(
+                                                    textStyle: Theme.of(context)
+                                                        .textTheme
+                                                        .headline1),
+                                              ),
+                                              const Padding(
+                                                padding: EdgeInsets.fromLTRB(
+                                                    120, 0, 0, 0),
+                                                child: Icon(
+                                                  Icons.calendar_month_rounded,
+                                                  color: Color(0xff41434D),
+                                                  size: 30.0,
+                                                  semanticLabel:
+                                                      'Text to announce in accessibility modes',
+                                                ),
+                                              )
+                                            ],
+                                          ),
+                                          Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.start,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.end,
                                             children: monthAppointmentWidgets,
                                           )
-                                            ],
-                                          );
+                                        ],
+                                      );
                                     } else {
                                       return Text('Empty data');
                                     }

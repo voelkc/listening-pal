@@ -7,7 +7,7 @@ import './onboarding.dart';
 import './resourcespage.dart';
 import './callpage.dart';
 import 'dart:convert';
-import './appointments.dart';
+import './availability.dart';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 
@@ -98,7 +98,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePage extends State<HomePage> {
   Future<Album>? _futureAlbum;
-  final ApptPage appt = ApptPage();
+  final AvailabilityPage appt = AvailabilityPage();
   DateTime _selectedDay = DateTime.utc(2022, 3, 10);
   List<DateTime> apptDays = [
     DateTime.utc(2022, 3, 3),
@@ -132,9 +132,9 @@ class _HomePage extends State<HomePage> {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 TextButton(
-                  onPressed: () => goToResources(context),
+                  onPressed: () => goToAvailability(context),
                   child: Text(
-                    'Resources',
+                    'Availability',
                     style: GoogleFonts.roboto(
                             textStyle: Theme.of(context).textTheme.bodyText1)
                         .copyWith(decoration: TextDecoration.none),
@@ -253,11 +253,11 @@ class _HomePage extends State<HomePage> {
                                       borderRadius: BorderRadius.circular(18.0),
                                       side: const BorderSide(
                                           color: Color(0xff95D4D8))))),
-                      onPressed: () => goToApptPage(context),
+                      onPressed: () => goToAvailability(context),
                       child: Padding(
                         padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
                         child: Text(
-                          'Schedule an Appointment',
+                          'Add your Availability',
                           style: GoogleFonts.roboto(
                               textStyle: Theme.of(context).textTheme.button),
                         ),
@@ -789,12 +789,10 @@ class _HomePage extends State<HomePage> {
         MaterialPageRoute(builder: (_) => OnboardingPage()),
       );
 
-  void goToResources(context) => Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => ResourcesPage()),
+  void goToAvailability(context) => Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => AvailabilityPage()),
       );
-  void goToApptPage(context) => Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => ApptPage()),
-      );
+
   FutureBuilder<Album> buildFutureBuilder() {
     return FutureBuilder<Album>(
       future: _futureAlbum,
